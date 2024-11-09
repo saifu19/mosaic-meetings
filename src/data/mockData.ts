@@ -1,4 +1,4 @@
-import { Participant, Meeting, KanbanColumn, AgendaItem, InsightType } from '../types';
+import { Participant, Meeting, KanbanColumn, AgendaItem } from '../types';
 
 export const mockParticipants: Participant[] = [
     { id: "1", name: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { MEETING_CONFIG } from '../constants';
 
 const useMeetingTimer = (isActive: boolean) => {
-  const [duration, setDuration] = useState(MEETING_CONFIG.DEFAULT_DURATION);
+  const [duration, setDuration] = useState(<number>MEETING_CONFIG.DEFAULT_DURATION);
 
   useEffect(() => {
     if (!isActive) return;
