@@ -1,0 +1,5 @@
+export const MEETING_CONFIG = {
+    UPDATE_INTERVAL: 10000, // 10 seconds
+    MIN_TRANSCRIPT_LENGTH: 100,
+    DEFAULT_DURATION: 0,
+} as const;
