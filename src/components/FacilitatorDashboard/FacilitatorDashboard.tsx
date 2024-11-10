@@ -1,4 +1,4 @@
-import { useState, useReducer, useMemo, useCallback } from 'react';
+import { useState, useReducer, useMemo, useCallback, useEffect } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AddMeetingDialog } from '@/components/AddMeetingDialog/AddMeetingDialog';
 import { CreateMeetingTypeDialog } from '@/components/CreateMeetingTypeDialog/CreateMeetingTypeDialog';
@@ -14,11 +14,15 @@ import { QRCodeModal } from '@/components/QRCodeModal/QRCodeModal';
 import { AIInsightModalWrapper } from '@/components/AIInsightModalWrapper/AIInsightModalWrapper';
 import { useMeetingActions } from '@/hooks/useMeetingActions';
 import { useModalStates } from '@/hooks/useModalStates';
+import axios from 'axios';
 
 function FacilitatorDashboard() {
-	const [meetings, setMeetings] = useState<Meeting[]>(mockMeetings);
+	const [meetings, setMeetings] = useState<Meeting[]>([]);
 	const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
 	const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>(initialKanbanColumns);
+	const [existingMeetings, setExistingMeetings] = useState<Meeting[]>([]);
+	const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
+	const [refreshTrigger, setRefreshTrigger] = useState(0);
 
 	const [meetingState, dispatch] = useReducer(meetingReducer, {
 		status: 'not_started',
@@ -33,11 +37,71 @@ function FacilitatorDashboard() {
 	const meetingDuration = useMeetingTimer(meetingState.status === 'in_progress');
 
 	const modals = useModalStates();
-    const { startMeeting, stopMeeting } = useMeetingActions({
-        selectedMeeting,
-        setMeetings,
-        dispatch
-    });
+	const { startMeeting, stopMeeting } = useMeetingActions({
+		selectedMeeting,
+		setMeetings,
+		dispatch
+	});
+
+	useEffect(() => {
+		const fetchMeetings = async () => {
+			try {
+				const response = await axios.get('https://mojomosaic.live:8443/get-meetings')
+				console.log(response.data)
+				const { upcoming, existing } = formatMeetings(response.data)
+				setUpcomingMeetings(upcoming)
+				setExistingMeetings(existing)
+
+				const isAnyMeetingJoined = existing.some(meeting => meeting.isJoined) || upcoming.some(meeting => meeting.isJoined)
+				// setHasJoinedMeeting(isAnyMeetingJoined)
+			} catch (error: unknown) {
+				if (error instanceof Error) {
+					console.error('Error fetching meetings:', error.message)
+				} else {
+					console.error('Error fetching meetings:', String(error))
+				}
+			}
+		}
+
+		fetchMeetings()
+	}, [refreshTrigger]);
+
+	const formatMeetings = (meetings: any[]) => {
+		const now = new Date()
+
+		const formattedMeetings = meetings.map(meeting => {
+			console.log(meeting)
+			const meetingDate = meeting[3] ? new Date(meeting[3]) : new Date()
+			const startTime = new Date(meetingDate.toLocaleString([], {
+				weekday: 'short',
+				month: 'short',
+				day: 'numeric',
+				year: 'numeric',
+				hour: '2-digit',
+				minute: '2-digit'
+			}))
+			return {
+				id: meeting[0],
+				title: meeting[1],
+				description: meeting[2],
+				rawTime: meetingDate,
+				startTime: startTime,
+				endTime: null,
+				link: meeting[4],
+				isJoined: meeting[5],
+				participants: meeting[6] ? meeting[6] : [],
+				status: meetingDate > now ? 'Upcoming' : 'Past',
+				transcriptItems: meeting[7] ? meeting[7] : [],
+				agendaItems: meeting[8] ? meeting[8] : [],
+				insights: meeting[9] ? meeting[9] : [],
+			}
+		})
+
+		const upcoming = formattedMeetings.filter(meeting => meeting.rawTime > now)
+		const existing = formattedMeetings.filter(meeting => meeting.rawTime <= now)
+		console.log(upcoming, existing)
+		return { upcoming, existing }
+	}
 
 	// Utility Functions
 	const formatTime = useCallback((seconds: number) => {
@@ -76,7 +140,8 @@ function FacilitatorDashboard() {
 				) : (
 					<div className="flex-1">
 						<MeetingsAndKanbanView
-							meetings={meetings}
+							existingMeetings={existingMeetings}
+							upcomingMeetings={upcomingMeetings}
 							kanbanColumns={kanbanColumns}
 							setKanbanColumns={setKanbanColumns}
 							onMeetingSelect={setSelectedMeetingId}
@@ -111,6 +176,7 @@ function FacilitatorDashboard() {
 					isOpen={modals.addMeeting.isOpen}
 					onClose={modals.addMeeting.close}
 					setMeetings={setMeetings}
+					onMeetingAdded={() => setRefreshTrigger(prev => prev + 1)}
 				/>
 
 				{/* Create Meeting Type Dialog */}

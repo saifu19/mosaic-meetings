@@ -23,6 +23,8 @@ export const mockMeetings: Meeting[] = [
         transcriptItems: [],
         insights: [],
         participants: mockParticipants,
+        link: "",
+        isJoined: false,
     },
     {
         id: "2",
@@ -38,6 +40,8 @@ export const mockMeetings: Meeting[] = [
         transcriptItems: [],
         insights: [],
         participants: mockParticipants,
+        link: "",
+        isJoined: false,
     },
 ];
 

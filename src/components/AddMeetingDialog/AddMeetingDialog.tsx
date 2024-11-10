@@ -18,26 +18,31 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { meetingTypes } from '@/data/mockData';
+import axios from 'axios';
 
 interface AddMeetingDialogProps {
     isOpen: boolean;
     onClose: () => void;
     setMeetings: React.Dispatch<React.SetStateAction<Meeting[]>>;
+    onMeetingAdded: () => void;
 }
 
 export const AddMeetingDialog = ({
     isOpen,
     onClose,
     setMeetings,
+    onMeetingAdded,
 }: AddMeetingDialogProps) => {
 
     const [formData, setFormData] = React.useState<Partial<Meeting>>({
         title: '',
         description: '',
+        link: '',
+        startTime: null,
         participants: [],
     });
 
-    const handleAddMeeting = (formData: Partial<Meeting>) => {
+    const handleAddMeeting = async (formData: Partial<Meeting>) => {
         const meetingToAdd: Meeting = {
             id: Date.now().toString(),
             title: formData.title || '',
@@ -48,7 +53,36 @@ export const AddMeetingDialog = ({
             participants: [],
             transcriptItems: [],
             insights: [],
+            link: formData.link || '',
+            isJoined: false,
         };
+        const localDate = new Date(formData.startTime || Date.now());
+        meetingToAdd.startTime = localDate;
+        const formattedDate = localDate.getUTCFullYear() + '-' +
+            String(localDate.getUTCMonth() + 1).padStart(2, '0') + '-' +
+            String(localDate.getUTCDate()).padStart(2, '0') + ' ' +
+            String(localDate.getUTCHours()).padStart(2, '0') + ':' +
+            String(localDate.getUTCMinutes()).padStart(2, '0') + ':00'
+
+        const meetingData = {
+            meeting_title: meetingToAdd.title,
+            meeting_agenda: meetingToAdd.description,
+            meeting_link: meetingToAdd.link,
+            meeting_time: formattedDate,
+        }
+
+        const config = {
+            method: 'post',
+            url: 'https://mojomosaic.live:8443/create-meeting',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: meetingData
+        }
+
+        const response = await axios(config)
+
+
         setMeetings(prevMeetings => [...prevMeetings, meetingToAdd]);
     };
 
@@ -59,11 +93,11 @@ export const AddMeetingDialog = ({
         }));
     };
 
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        handleAddMeeting(formData);
-        setFormData({ title: '', description: '', participants: [] });
+        await handleAddMeeting(formData);
+        setFormData({ title: '', description: '', participants: [], link: '' });
+        onMeetingAdded();
         onClose();
     };
 
@@ -89,6 +123,23 @@ export const AddMeetingDialog = ({
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             required
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label>Meeting Date</label>
+                        <Input
+                            type="datetime-local"
+                            value={formData.startTime ? new Date(formData.startTime).toISOString().slice(0, -5) : ''}
+                            onChange={(e) => setFormData({ ...formData, startTime: new Date(e.target.value) })}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label>Meeting Link</label>
+                        <Input
+                            value={formData.link || ''}
+                            onChange={(e) => setFormData({ ...formData, link: e.target.value })}
                         />
                     </div>
 

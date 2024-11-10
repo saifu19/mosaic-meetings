@@ -16,8 +16,10 @@ export interface Meeting {
 	id: string;
 	title: string;
 	description: string;
-	startTime: string | null;
-	endTime: string | null;
+	link: string | null;
+	startTime: Date | null;
+	endTime: Date | null;
+	isJoined: boolean;
 	agendaItems: AgendaItem[];
 	transcriptItems: TranscriptItem[];
 	insights: AIInsight[];

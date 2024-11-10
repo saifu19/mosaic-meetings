@@ -8,7 +8,8 @@ import { KanbanBoard } from '@/components/KanbanBoard/KanbanBoard';
 import { Meeting, KanbanColumn } from '@/types';
 
 interface MeetingsAndKanbanViewProps {
-    meetings: Meeting[];
+    existingMeetings: Meeting[];
+    upcomingMeetings: Meeting[];
     kanbanColumns: KanbanColumn[];
     setKanbanColumns: React.Dispatch<React.SetStateAction<KanbanColumn[]>>;
     onMeetingSelect: (id: string) => void;
@@ -17,7 +18,8 @@ interface MeetingsAndKanbanViewProps {
 }
 
 export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
-    meetings,
+    existingMeetings,
+    upcomingMeetings,
     kanbanColumns,
     setKanbanColumns,
     onMeetingSelect,
@@ -53,7 +55,7 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
                 </TabsList>
                 <TabsContent value="upcoming">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {meetings.filter(m => !m.endTime).map(meeting => (
+                        {upcomingMeetings.map(meeting => (
                             <Card 
                                 key={meeting.id} 
                                 className="cursor-pointer" 
@@ -79,7 +81,7 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
                 </TabsContent>
                 <TabsContent value="previous">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {meetings.filter(m => m.endTime).map(meeting => (
+                        {existingMeetings.map(meeting => (
                             <Card key={meeting.id}>
                                 <CardHeader>
                                     <CardTitle>{meeting.title}</CardTitle>
@@ -88,7 +90,7 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
                                     <p>{meeting.description}</p>
                                     <div className="mt-2 flex items-center">
                                         <Calendar className="mr-2 h-4 w-4" />
-                                        <span>{new Date(meeting.endTime!).toLocaleString()}</span>
+                                        <span>{new Date(meeting.startTime!).toLocaleString()}</span>
                                     </div>
                                 </CardContent>
                             </Card>
