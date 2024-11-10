@@ -23,6 +23,9 @@ function FacilitatorDashboard() {
 	const [existingMeetings, setExistingMeetings] = useState<Meeting[]>([]);
 	const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
 	const [refreshTrigger, setRefreshTrigger] = useState(0);
+	// const [isJoined, setIsJoined] = useState(false)
+	// const [isJoining, setIsJoining] = useState(false)
+	// const [isEnding, setIsEnding] = useState(false)
 
 	const [meetingState, dispatch] = useReducer(meetingReducer, {
 		status: 'not_started',
@@ -46,7 +49,7 @@ function FacilitatorDashboard() {
 	const { startMeeting, stopMeeting } = useMeetingActions({
 		selectedMeeting,
 		setMeetings,
-		dispatch
+		dispatch,
 	});
 
 	useEffect(() => {
