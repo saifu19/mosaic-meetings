@@ -7,7 +7,7 @@ import { MeetingsAndKanbanView } from '@/components/MeetingsAndKanbanView/Meetin
 import useMeetingTimer from '@/hooks/useMeetingTimer';
 import { meetingReducer } from '@/reducers/meetingReducer';
 import { Meeting, KanbanColumn } from '@/types';
-import { initialKanbanColumns } from '@/data/mockData';
+import { initialKanbanColumns, meetingTypes } from '@/data/mockData';
 import { MeetingContent } from '@/components/MeetingContent/MeetingContent';
 import { MeetingSidebar } from '@/components/MeetingSidebar/MeetingSidebar';
 import { QRCodeModal } from '@/components/QRCodeModal/QRCodeModal';
@@ -96,7 +96,7 @@ function FacilitatorDashboard() {
 				participants: meeting[6] ? meeting[6] : [],
 				status: meetingDate > now ? 'Upcoming' : 'Past',
 				transcriptItems: meeting[7] ? meeting[7] : [],
-				agendaItems: meeting[8] ? meeting[8] : [],
+				agendaItems: meetingTypes.scrum.defaultAgendaItems,
 				insights: meeting[9] ? meeting[9] : [],
 			}
 		})
