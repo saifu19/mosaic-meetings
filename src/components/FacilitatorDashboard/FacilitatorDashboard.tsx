@@ -36,6 +36,12 @@ function FacilitatorDashboard() {
 	const selectedMeeting = useMemo(() => meetings.find(m => m.id === selectedMeetingId) || null, [meetings, selectedMeetingId]);
 	const meetingDuration = useMeetingTimer(meetingState.status === 'in_progress');
 
+	const updateSelectedMeeting = (id: string) => {
+		setSelectedMeetingId(id);
+		console.log(id);
+		console.log(selectedMeetingId);
+	}
+
 	const modals = useModalStates();
 	const { startMeeting, stopMeeting } = useMeetingActions({
 		selectedMeeting,
@@ -47,11 +53,10 @@ function FacilitatorDashboard() {
 		const fetchMeetings = async () => {
 			try {
 				const response = await axios.get('https://mojomosaic.live:8443/get-meetings')
-				console.log(response.data)
 				const { upcoming, existing } = formatMeetings(response.data)
 				setUpcomingMeetings(upcoming)
 				setExistingMeetings(existing)
-
+				setMeetings([...upcoming, ...existing])
 				// const isAnyMeetingJoined = existing.some(meeting => meeting.isJoined) || upcoming.some(meeting => meeting.isJoined)
 				// setHasJoinedMeeting(isAnyMeetingJoined)
 			} catch (error: unknown) {
@@ -70,7 +75,6 @@ function FacilitatorDashboard() {
 		const now = new Date()
 
 		const formattedMeetings = meetings.map(meeting => {
-			console.log(meeting)
 			const meetingDate = meeting[3] ? new Date(meeting[3]) : new Date()
 			const startTime = new Date(meetingDate.toLocaleString([], {
 				weekday: 'short',
@@ -99,7 +103,6 @@ function FacilitatorDashboard() {
 
 		const upcoming = formattedMeetings.filter(meeting => meeting.rawTime > now)
 		const existing = formattedMeetings.filter(meeting => meeting.rawTime <= now)
-		console.log(upcoming, existing)
 		return { upcoming, existing }
 	}
 
@@ -144,7 +147,7 @@ function FacilitatorDashboard() {
 							upcomingMeetings={upcomingMeetings}
 							kanbanColumns={kanbanColumns}
 							setKanbanColumns={setKanbanColumns}
-							onMeetingSelect={setSelectedMeetingId}
+							onMeetingSelect={updateSelectedMeeting}
 							onAddMeetingClick={modals.addMeeting.open}
 							onCreateMeetingTypeClick={modals.createMeetingType.open}
 						/>
