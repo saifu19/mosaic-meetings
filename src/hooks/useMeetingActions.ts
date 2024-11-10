@@ -22,7 +22,7 @@ export const useMeetingActions = ({
                 meeting.id === selectedMeeting.id
                     ? {
                         ...meeting,
-                        startTime: new Date().toISOString(),
+                        startTime: new Date(),
                         agendaItems: meeting.agendaItems.map((item, index) =>
                             index === 0 ? { ...item, status: 'in_progress' } : item
                         )
@@ -42,7 +42,7 @@ export const useMeetingActions = ({
             dispatch({ type: 'END_MEETING' });
             setMeetings(prevMeetings => prevMeetings.map(meeting =>
                 meeting.id === selectedMeeting.id
-                    ? { ...meeting, endTime: new Date().toISOString() }
+                    ? { ...meeting, endTime: new Date() }
                     : meeting
             ));
         } catch (error) {

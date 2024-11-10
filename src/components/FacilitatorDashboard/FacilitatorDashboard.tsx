@@ -7,7 +7,7 @@ import { MeetingsAndKanbanView } from '@/components/MeetingsAndKanbanView/Meetin
 import useMeetingTimer from '@/hooks/useMeetingTimer';
 import { meetingReducer } from '@/reducers/meetingReducer';
 import { Meeting, KanbanColumn } from '@/types';
-import { mockMeetings, initialKanbanColumns } from '@/data/mockData';
+import { initialKanbanColumns } from '@/data/mockData';
 import { MeetingContent } from '@/components/MeetingContent/MeetingContent';
 import { MeetingSidebar } from '@/components/MeetingSidebar/MeetingSidebar';
 import { QRCodeModal } from '@/components/QRCodeModal/QRCodeModal';
@@ -52,7 +52,7 @@ function FacilitatorDashboard() {
 				setUpcomingMeetings(upcoming)
 				setExistingMeetings(existing)
 
-				const isAnyMeetingJoined = existing.some(meeting => meeting.isJoined) || upcoming.some(meeting => meeting.isJoined)
+				// const isAnyMeetingJoined = existing.some(meeting => meeting.isJoined) || upcoming.some(meeting => meeting.isJoined)
 				// setHasJoinedMeeting(isAnyMeetingJoined)
 			} catch (error: unknown) {
 				if (error instanceof Error) {

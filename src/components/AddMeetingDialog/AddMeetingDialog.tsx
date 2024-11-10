@@ -80,7 +80,7 @@ export const AddMeetingDialog = ({
             data: meetingData
         }
 
-        const response = await axios(config)
+        await axios(config)
 
 
         setMeetings(prevMeetings => [...prevMeetings, meetingToAdd]);
