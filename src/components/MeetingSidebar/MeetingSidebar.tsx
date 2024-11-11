@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -39,7 +39,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
             <p className="text-gray-600 mb-4">{meeting.description}</p>
             <div className="flex items-center mb-4">
                 <Clock className="h-5 w-5 text-gray-500 mr-2" />
-                {/* <span className="font-semibold">{formatTime(meetingDuration)}</span> */}
+                <span className="font-semibold">{formatTime(meetingDuration)}</span>
             </div>
             {meetingState.status === 'not_started' && (
                 <Button

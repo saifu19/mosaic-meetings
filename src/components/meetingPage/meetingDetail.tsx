@@ -1,6 +1,6 @@
 // MeetingDetail.tsx
 import { useReducer, useState, useEffect, useCallback} from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { MeetingSidebar } from '@/components/MeetingSidebar/MeetingSidebar';
 import { MeetingContent } from '@/components/MeetingContent/MeetingContent';
@@ -16,16 +16,9 @@ import axios from 'axios';
 
 
 function MeetingDetail() {
-
-    const [targetMeeting, setTargetMeeting] = useState<Meeting[]>([]);
-
     const { meetingId } = useParams();
     console.log("meeting:",meetingId)
-    const [meetings, setMeetings] = useState<Meeting[]>([]);
-
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-
-    
     
     // const selectedMeeting = useMemo(() => meetings.find(m => m.id === meetingId), [meetings, meetingId]);
     const modals = useModalStates();
@@ -110,11 +103,10 @@ const formatMeetings = (meetings: any[]): Meeting[] => {
         loadMeetingById();
     }, []);
 
-    console.log("target meeting : ",targetMeeting)
     const meetingDuration = useMeetingTimer(meetingState.status === 'in_progress');
     const { startMeeting, stopMeeting } = useMeetingActions({
         selectedMeeting,
-        setMeetings,
+        setSelectedMeeting,
         dispatch,
     });
     
@@ -148,7 +140,8 @@ const formatMeetings = (meetings: any[]): Meeting[] => {
                             meetingState={meetingState}
                             selectedMeetingId={selectedMeeting.id || ''}
                             dispatch={dispatch}
-                            setMeetings={setMeetings}
+                            selectedMeeting={selectedMeeting}
+                            setSelectedMeeting={setSelectedMeeting}
                             setSelectedInsight={modals.insight.select}
                         />
                     </>

@@ -8,9 +8,9 @@ interface AgendaTimelineProps {
     currentAgendaItemId: string;
     currentAgendaItemIndex: number;
     onAgendaItemChange: (itemId: string) => void;
-    setMeetings: React.Dispatch<React.SetStateAction<Meeting[]>>;
+    selectedMeeting: Meeting | null;
+    setSelectedMeeting: React.Dispatch<React.SetStateAction<Meeting | null>>;
     dispatch: React.Dispatch<any>;
-    selectedMeetingId: string;
     isInProgress?: boolean;
 }
 
@@ -19,9 +19,9 @@ export const AgendaTimeline = ({
     currentAgendaItemId,
     currentAgendaItemIndex,
     onAgendaItemChange,
-    setMeetings,
+    selectedMeeting,
+    setSelectedMeeting,
     dispatch,
-    selectedMeetingId,
     isInProgress = false,
 }: AgendaTimelineProps) => {
     const formatTime = (seconds: number) => {
@@ -34,17 +34,12 @@ export const AgendaTimeline = ({
         const nextIndex = currentAgendaItemIndex + 1;
         if (nextIndex >= meeting.agendaItems.length) return;
 
-        // Update meeting status
-        setMeetings(prevMeetings => prevMeetings.map(meeting => {
-            if (meeting.id !== selectedMeetingId) return meeting;
-            const updatedAgendaItems = [...meeting.agendaItems];
-            updatedAgendaItems[currentAgendaItemIndex].status = 'completed';
-            updatedAgendaItems[nextIndex].status = 'in_progress';
-            return {
-                ...meeting,
-                agendaItems: updatedAgendaItems
-            };
-        }));
+        setSelectedMeeting(selectedMeeting ? {
+            ...selectedMeeting,
+            agendaItems: selectedMeeting.agendaItems.map((item, index) =>
+                index === nextIndex ? { ...item, status: 'in_progress' } : item
+            )
+        } : null);
 
         // Update current agenda item index
         dispatch({ type: 'NEXT_AGENDA_ITEM' });

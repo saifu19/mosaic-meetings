@@ -11,17 +11,18 @@ interface MeetingContentProps {
     meetingState: MeetingState;
     selectedMeetingId: string;
     dispatch: React.Dispatch<any>;
-    setMeetings: React.Dispatch<React.SetStateAction<Meeting[]>>;
+    selectedMeeting: Meeting | null;
+    setSelectedMeeting: React.Dispatch<React.SetStateAction<Meeting | null>>;
     setSelectedInsight: (insight: AIInsight | null) => void;
 }
 
 export const MeetingContent: React.FC<MeetingContentProps> = ({
     meeting,
     meetingState,
-    selectedMeetingId,
     dispatch,
-    setMeetings,
+    selectedMeeting,
     setSelectedInsight,
+    setSelectedMeeting,
 }) => {
     return (
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -43,9 +44,9 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                         const newIndex = meeting?.agendaItems.findIndex(item => item.id === itemId) || 0;
                         dispatch({ type: 'SET_AGENDA_ITEM_INDEX', payload: newIndex });
                     }}
-                    setMeetings={setMeetings}
                     dispatch={dispatch}
-                    selectedMeetingId={selectedMeetingId}
+                    selectedMeeting={selectedMeeting}
+                    setSelectedMeeting={setSelectedMeeting}
                     isInProgress={meetingState.status === 'in_progress'}
                 />
             </div>
@@ -65,11 +66,10 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                                 onInsightClick={setSelectedInsight}
                                 isSimulationEnabled={meetingState.status === 'in_progress'}
                                 onNewTranscript={(newTranscripts) => {
-                                    setMeetings(prev => prev.map(m =>
-                                        m.id === selectedMeetingId
-                                            ? { ...m, transcriptItems: [...m.transcriptItems, ...newTranscripts] }
-                                            : m
-                                    ));
+                                    setSelectedMeeting(selectedMeeting ? {
+                                        ...selectedMeeting,
+                                        transcriptItems: [...selectedMeeting.transcriptItems, ...newTranscripts]
+                                    } : null);
                                 }}
                             />
                         </CardContent>
@@ -83,11 +83,10 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                         currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
                         onInsightSelect={setSelectedInsight}
                         onNewInsight={(newInsight) => {
-                            setMeetings(prev => prev.map(m =>
-                                m.id === selectedMeetingId
-                                    ? { ...m, insights: [...m.insights, newInsight] }
-                                    : m
-                            ));
+                            setSelectedMeeting(selectedMeeting ? {
+                                ...selectedMeeting,
+                                insights: [...selectedMeeting.insights, newInsight]
+                            } : null);
                         }}
                     />
                 </div>
