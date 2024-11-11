@@ -16,10 +16,8 @@ import axios from 'axios';
 
 export const MeetingPage = () => {
     const { meetingId } = useParams();
-    console.log("meeting:",meetingId)
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
     
-    // const selectedMeeting = useMemo(() => meetings.find(m => m.id === meetingId), [meetings, meetingId]);
     const modals = useModalStates();
     const [meetingState, dispatch] = useReducer(meetingReducer, {
         status: 'not_started',
@@ -40,22 +38,11 @@ export const MeetingPage = () => {
         }
     };
     
-
     // Use fetchMeetings to fetch and set the specific meeting by ID
     const fetchMeetingById = async (meetingId: string): Promise<Meeting | null> => {
         try {
             const meetings = await fetchMeetings();
-            if(meetings){
-                console.log("fetched all")
-            }
             const targetMeeting = meetings.find(meeting => String(meeting.id) === meetingId) || null;
-            console.log("function called")
-            if(targetMeeting){
-                console.log("get target")
-            }
-            else{
-                console.log("no target")
-            }
             return targetMeeting;
         } catch (error) {
             console.error('Error fetching the specific meeting:', error);
@@ -63,44 +50,54 @@ export const MeetingPage = () => {
         }
     };
 
-
     // Ensure formatMeetings returns Meeting[]
-const formatMeetings = (meetings: any[]): Meeting[] => {
-    const now = new Date();
-    
-    return meetings.map(meeting => {
-        const meetingDate = new Date(meeting[3] || new Date());
+    const formatMeetings = (meetings: any[]): Meeting[] => {
+        const now = new Date();
         
-        return {
-            id: meeting[0],
-            title: meeting[1],
-            description: meeting[2],
-            rawTime: meetingDate,
-            startTime: meetingDate,
-            endTime: meeting[8] ? new Date(meeting[8]) : null,
-            link: meeting[4],
-            isJoined: meeting[5],
-            participants: meeting[6] || [],
-            status: meetingDate > now ? 'Upcoming' : 'Past',
-            transcriptItems: meeting[7] || [],
-            agendaItems: meetingTypes.scrum.defaultAgendaItems,
-            insights: meeting[9] || [],
-        };
-    });
-};
+        return meetings.map(meeting => {
+            const meetingDate = new Date(meeting[3] || new Date());
+            
+            return {
+                id: meeting[0],
+                title: meeting[1],
+                description: meeting[2],
+                rawTime: meetingDate,
+                startTime: meetingDate,
+                endTime: meeting[8] ? new Date(meeting[8]) : null,
+                link: meeting[4],
+                isJoined: meeting[5],
+                participants: meeting[6] || [],
+                status: meetingDate > now ? 'Upcoming' : 'Past',
+                transcriptItems: meeting[7] || [],
+                agendaItems: meetingTypes.scrum.defaultAgendaItems,
+                insights: meeting[9] || [],
+            };
+        });
+    };
 
     // Set the fetched meeting in useEffect
     useEffect(() => {
         const loadMeetingById = async () => {
-            const meeting = await fetchMeetingById(String(meetingId)); 
-            if (meeting) {
-                setSelectedMeeting(meeting);([meeting]);
-            } else {
-                setSelectedMeeting(meeting);([]); 
+            try {
+                const meeting = await fetchMeetingById(String(meetingId)); 
+                if (meeting) {
+                    setSelectedMeeting(meeting);
+                    if (meeting.isJoined) {
+                        dispatch({ type: 'START_MEETING', status: 'in_progress' });
+                    } else {
+                        dispatch({ type: 'END_MEETING', status: 'not_started' });
+                    }
+                } else {
+                    setSelectedMeeting(null);
+                }
+            } catch (error) {
+                console.error('Error fetching the specific meeting:', error);
+                setSelectedMeeting(null);
             }
         };
+        
         loadMeetingById();
-    }, []);
+    }, [meetingId ]);
 
     const meetingDuration = useMeetingTimer(meetingState.status === 'in_progress');
     const { startMeeting, stopMeeting } = useMeetingActions({
@@ -109,7 +106,6 @@ const formatMeetings = (meetings: any[]): Meeting[] => {
         dispatch,
     });
     
-
 	// Utility Functions
 	const formatTime = useCallback((seconds: number) => {
 		const mins = Math.floor(seconds / 60);

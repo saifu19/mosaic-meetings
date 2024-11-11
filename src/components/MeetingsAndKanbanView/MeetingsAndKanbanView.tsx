@@ -24,7 +24,7 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
     onMeetingSelect
 }) => {
     const [existingMeetings, setExistingMeetings] = useState<Meeting[]>([]);
-	const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
+    const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | undefined>(undefined);
     const [editMode, setEditMode] = useState(false);
@@ -34,65 +34,65 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
         setEditMode(true);
         modals.addMeeting.open();
     };
-    
-    useEffect(() => {
-		const fetchMeetings = async () => {
-			try {
-				const response = await axios.get('https://mojomosaic.live:8443/get-meetings')
-				const { upcoming, existing } = formatMeetings(response.data)
-                console.log(upcoming, existing)
-				setUpcomingMeetings(upcoming)
-				setExistingMeetings(existing)
-				// setMeetings([...upcoming, ...existing])
-				// const isAnyMeetingJoined = existing.some(meeting => meeting.isJoined) || upcoming.some(meeting => meeting.isJoined)
-				// setHasJoinedMeeting(isAnyMeetingJoined)
-			} catch (error: unknown) {
-				if (error instanceof Error) {
-					console.error('Error fetching meetings:', error.message)
-				} else {
-					console.error('Error fetching meetings:', String(error))
-				}
-			}
-		}
 
-		fetchMeetings()
-	}, [refreshTrigger]);
+    useEffect(() => {
+        const fetchMeetings = async () => {
+            try {
+                const response = await axios.get('https://mojomosaic.live:8443/get-meetings')
+                const { upcoming, existing } = formatMeetings(response.data)
+                console.log(upcoming, existing)
+                setUpcomingMeetings(upcoming)
+                setExistingMeetings(existing)
+                // setMeetings([...upcoming, ...existing])
+                // const isAnyMeetingJoined = existing.some(meeting => meeting.isJoined) || upcoming.some(meeting => meeting.isJoined)
+                // setHasJoinedMeeting(isAnyMeetingJoined)
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    console.error('Error fetching meetings:', error.message)
+                } else {
+                    console.error('Error fetching meetings:', String(error))
+                }
+            }
+        }
+
+        fetchMeetings()
+    }, [refreshTrigger]);
 
     const formatMeetings = (meetings: any[]) => {
-		const now = new Date()
+        const now = new Date()
 
-		const formattedMeetings = meetings.map(meeting => {
-			const meetingDate = meeting[3] ? new Date(meeting[3]) : new Date()
-			const startTime = new Date(meetingDate.toLocaleString([], {
-				weekday: 'short',
-				month: 'short',
-				day: 'numeric',
-				year: 'numeric',
-				hour: '2-digit',
-				minute: '2-digit'
-			}))
-			return {
-				id: meeting[0],
-				title: meeting[1],
-				description: meeting[2],
-				rawTime: meetingDate,
-				startTime: startTime,
-				endTime: null,
-				link: meeting[4],
-				isJoined: meeting[5],
-				participants: meeting[6] ? meeting[6] : [],
-				status: meetingDate > now ? 'Upcoming' : 'Past',
-				transcriptItems: meeting[7] ? meeting[7] : [],
-				agendaItems: meetingTypes.scrum.defaultAgendaItems,
-				insights: meeting[9] ? meeting[9] : [],
-			}
-		})
+        const formattedMeetings = meetings.map(meeting => {
+            const meetingDate = meeting[3] ? new Date(meeting[3]) : new Date()
+            const startTime = new Date(meetingDate.toLocaleString([], {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }))
+            return {
+                id: meeting[0],
+                title: meeting[1],
+                description: meeting[2],
+                rawTime: meetingDate,
+                startTime: startTime,
+                endTime: null,
+                link: meeting[4],
+                isJoined: meeting[5],
+                participants: meeting[6] ? meeting[6] : [],
+                status: meetingDate > now ? 'Upcoming' : 'Past',
+                transcriptItems: meeting[7] ? meeting[7] : [],
+                agendaItems: meetingTypes.scrum.defaultAgendaItems,
+                insights: meeting[9] ? meeting[9] : [],
+            }
+        })
 
-		const upcoming = formattedMeetings.filter(meeting => meeting.rawTime > now)
-		const existing = formattedMeetings.filter(meeting => meeting.rawTime <= now)
-		return { upcoming, existing }
-	}
-    
+        const upcoming = formattedMeetings.filter(meeting => meeting.rawTime > now)
+        const existing = formattedMeetings.filter(meeting => meeting.rawTime <= now)
+        return { upcoming, existing }
+    }
+
     const modals = useModalStates();
     return (
         <div className="p-4" style={{ width: '100%' }}>
@@ -129,18 +129,20 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
                                 className="cursor-pointer"
                                 onClick={() => onMeetingSelect(meeting.id)}
                             >
-                                <CardHeader className='d-flex'>
-                                    <CardTitle className='d-inline'>{meeting.title}</CardTitle>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={(e) => {
-                                            e.stopPropagation();  // Prevent card click event
-                                            onEditMeetingClick(meeting);
-                                        }}
-                                    >
-                                        <Pencil className="h-4 w-4" />
-                                    </Button>
+                                <CardHeader>
+                                    <div className="flex justify-between items-center">
+                                        <CardTitle>{meeting.title}</CardTitle>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={(e) => {
+                                                e.stopPropagation();  // Prevent card click event
+                                                onEditMeetingClick(meeting);
+                                            }}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
                                     <p>{meeting.description}</p>
@@ -194,11 +196,11 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
                 mode={editMode ? 'edit' : 'add'}
                 initialData={selectedMeeting}
             />
-            
+
             <CreateMeetingTypeDialog
                 isOpen={modals.createMeetingType.isOpen}
                 onClose={modals.createMeetingType.close}
-            />  
+            />
         </div>
     );
 }; 

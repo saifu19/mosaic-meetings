@@ -28,11 +28,8 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
     onStopMeeting,
     onShowQRCode,
     // onBack,
-}) => 
-    {
-
+}) => {
     const navigate = useNavigate();
-
     return (
         <div className="w-64 bg-white shadow-md p-4 flex flex-col">
             <h2 className="text-xl font-bold mb-4">{meeting.title}</h2>
@@ -41,7 +38,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
                 <Clock className="h-5 w-5 text-gray-500 mr-2" />
                 <span className="font-semibold">{formatTime(meetingDuration)}</span>
             </div>
-            {meetingState.status === 'not_started' && (
+            {(meetingState.status === 'not_started' || !meeting.isJoined) ? (
                 <Button
                     onClick={onStartMeeting}
                     disabled={meetingState.isLoading}
@@ -49,11 +46,14 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
                     aria-busy={meetingState.isLoading}
                     aria-label="Start meeting"
                 >
-                    {meetingState.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                    {meetingState.isLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <Play className="mr-2 h-4 w-4" />
+                    )}
                     Start Meeting
                 </Button>
-            )}
-            {meetingState.status === 'in_progress' && (
+            ) : (
                 <Button
                     onClick={onStopMeeting}
                     variant="destructive"
@@ -62,7 +62,11 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
                     aria-busy={meetingState.isLoading}
                     aria-label="End meeting"
                 >
-                    {meetingState.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <X className="mr-2 h-4 w-4" />}
+                    {meetingState.isLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <X className="mr-2 h-4 w-4" />
+                    )}
                     End Meeting
                 </Button>
             )}
