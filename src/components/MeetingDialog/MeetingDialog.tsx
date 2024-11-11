@@ -23,8 +23,7 @@ import axios from 'axios';
 interface MeetingDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    setMeetings: React.Dispatch<React.SetStateAction<Meeting[]>>;
-    onMeetingAdded: () => void;
+    onMeetingUpdated: () => void;
     initialData?: Meeting;
     mode: 'add' | 'edit';
 }
@@ -32,8 +31,7 @@ interface MeetingDialogProps {
 export const MeetingDialog = ({
     isOpen,
     onClose,
-    setMeetings,
-    onMeetingAdded,
+    onMeetingUpdated,
     initialData,
     mode,
 }: MeetingDialogProps) => {
@@ -47,13 +45,21 @@ export const MeetingDialog = ({
     });
 
     useEffect(() => {
-        if (initialData && mode === 'edit') {
+        if (!isOpen || mode === 'add') {
+            setFormData({
+                title: '',
+                description: '',
+                link: '',
+                startTime: null,
+                participants: [],
+            });
+        } else if (mode === 'edit' && initialData) {
             setFormData({
                 ...initialData,
                 startTime: initialData.startTime ? new Date(initialData.startTime) : null,
             });
         }
-    }, [initialData]);
+    }, [isOpen, mode, initialData]);
 
     const handleAddMeeting = async (formData: Partial<Meeting>) => {
         const meetingToAdd: Meeting = {
@@ -96,7 +102,7 @@ export const MeetingDialog = ({
         await axios(config)
 
 
-        setMeetings(prevMeetings => [...prevMeetings, meetingToAdd]);
+        // setMeetings(prevMeetings => [...prevMeetings, meetingToAdd]);
     };
 
     const handleEditMeeting = async (formData: Partial<Meeting>) => {
@@ -123,7 +129,7 @@ export const MeetingDialog = ({
 				data: data
 			})
 
-			setMeetings(prevMeetings => prevMeetings.map(meeting => meeting.id === initialData?.id ? { ...meeting, ...formData } : meeting));
+			// setMeetings(prevMeetings => prevMeetings.map(meeting => meeting.id === initialData?.id ? { ...meeting, ...formData } : meeting));
 		} catch (error) {
 			console.error('Error updating meeting:', error)
 		}
@@ -144,7 +150,7 @@ export const MeetingDialog = ({
             await handleEditMeeting(formData);
         }
         setFormData({ title: '', description: '', participants: [], link: '' });
-        onMeetingAdded();
+        onMeetingUpdated();
         onClose();
     };
 
@@ -209,7 +215,9 @@ export const MeetingDialog = ({
                     </div>
 
                     <DialogFooter>
-                        <Button type="submit">Create Meeting</Button>
+                        <Button type="submit">
+                            {mode === 'add' ? 'Create Meeting' : 'Update Meeting'}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

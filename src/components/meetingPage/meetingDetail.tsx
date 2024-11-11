@@ -1,5 +1,5 @@
 // MeetingDetail.tsx
-import { useReducer, useMemo ,useState, useEffect} from 'react';
+import { useReducer, useState, useEffect, useCallback} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { MeetingSidebar } from '@/components/MeetingSidebar/MeetingSidebar';
@@ -19,10 +19,8 @@ function MeetingDetail() {
 
     const [targetMeeting, setTargetMeeting] = useState<Meeting[]>([]);
 
-
     const { meetingId } = useParams();
     console.log("meeting:",meetingId)
-    const navigate = useNavigate();
     const [meetings, setMeetings] = useState<Meeting[]>([]);
 
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
@@ -119,6 +117,14 @@ const formatMeetings = (meetings: any[]): Meeting[] => {
         setMeetings,
         dispatch,
     });
+    
+
+	// Utility Functions
+	const formatTime = useCallback((seconds: number) => {
+		const mins = Math.floor(seconds / 60);
+		const secs = seconds % 60;
+		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+	}, []);
 
     return (
         <TooltipProvider>
@@ -134,10 +140,8 @@ const formatMeetings = (meetings: any[]): Meeting[] => {
                             onStopMeeting={stopMeeting}
                             onShowQRCode={modals.qrCode.open}
                             // onBack={() => navigate('/')} 
-                            formatTime={function (): string {
-                                throw new Error('Function not implemented.');
-                            } }                        
-                            />
+                            formatTime={formatTime}
+                        />
 
                         <MeetingContent
                             meeting={selectedMeeting}

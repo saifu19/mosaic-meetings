@@ -74,7 +74,6 @@ function meetingDashboard() {
         const existing = formattedMeetings.filter(meeting => meeting.rawTime <= now);
         return { upcoming, existing };
     };
-    
 
     useEffect(() => {
         fetchMeetings();
@@ -84,25 +83,9 @@ function meetingDashboard() {
         <TooltipProvider>
             <div className="flex h-screen bg-gray-100">
                 <MeetingsAndKanbanView
-                    existingMeetings={existingMeetings}
-                    upcomingMeetings={upcomingMeetings}
                     kanbanColumns={kanbanColumns}
                     setKanbanColumns={setKanbanColumns}
                     onMeetingSelect={onMeetingSelect}
-                    onAddMeetingClick={modals.addMeeting.open}
-                    onCreateMeetingTypeClick={modals.createMeetingType.open}
-                />
-
-                <AddMeetingDialog
-                    isOpen={modals.addMeeting.isOpen}
-                    onClose={modals.addMeeting.close}
-                    setMeetings={setMeetings}
-                    onMeetingAdded={() => setRefreshTrigger(prev => prev + 1)}
-                />
-                
-                <CreateMeetingTypeDialog
-                    isOpen={modals.createMeetingType.isOpen}
-                    onClose={modals.createMeetingType.close}
                 />
             </div>
         </TooltipProvider>

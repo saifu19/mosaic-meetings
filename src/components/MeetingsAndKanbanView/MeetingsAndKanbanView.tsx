@@ -9,37 +9,41 @@ import { Meeting, KanbanColumn } from '@/types';
 import { MeetingDialog } from '@/components/MeetingDialog/MeetingDialog';
 import { CreateMeetingTypeDialog } from '@/components/CreateMeetingTypeDialog/CreateMeetingTypeDialog';
 import { useModalStates } from '@/hooks/useModalStates';
+import axios from 'axios';
+import { meetingTypes } from '@/data/mockData';
 
 interface MeetingsAndKanbanViewProps {
-    existingMeetings: Meeting[];
-    upcomingMeetings: Meeting[];
     kanbanColumns: KanbanColumn[];
     setKanbanColumns: React.Dispatch<React.SetStateAction<KanbanColumn[]>>;
     onMeetingSelect: (id: string) => void;
-    onAddMeetingClick: () => void;
-    setRefreshTrigger: () => void;
 }
 
 export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
-    // existingMeetings,
-    // upcomingMeetings,
     kanbanColumns,
     setKanbanColumns,
-    onMeetingSelect,
-    setRefreshTrigger,
+    onMeetingSelect
 }) => {
     const [existingMeetings, setExistingMeetings] = useState<Meeting[]>([]);
 	const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
-    const [meetings, setMeetings] = useState<Meeting[]>([]);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [selectedMeeting, setSelectedMeeting] = useState<Meeting | undefined>(undefined);
+    const [editMode, setEditMode] = useState(false);
+
+    const onEditMeetingClick = (meeting: Meeting) => {
+        setSelectedMeeting(meeting);
+        setEditMode(true);
+        modals.addMeeting.open();
+    };
     
     useEffect(() => {
 		const fetchMeetings = async () => {
 			try {
 				const response = await axios.get('https://mojomosaic.live:8443/get-meetings')
 				const { upcoming, existing } = formatMeetings(response.data)
+                console.log(upcoming, existing)
 				setUpcomingMeetings(upcoming)
 				setExistingMeetings(existing)
-				setMeetings([...upcoming, ...existing])
+				// setMeetings([...upcoming, ...existing])
 				// const isAnyMeetingJoined = existing.some(meeting => meeting.isJoined) || upcoming.some(meeting => meeting.isJoined)
 				// setHasJoinedMeeting(isAnyMeetingJoined)
 			} catch (error: unknown) {
@@ -54,10 +58,44 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
 		fetchMeetings()
 	}, [refreshTrigger]);
 
+    const formatMeetings = (meetings: any[]) => {
+		const now = new Date()
 
+		const formattedMeetings = meetings.map(meeting => {
+			const meetingDate = meeting[3] ? new Date(meeting[3]) : new Date()
+			const startTime = new Date(meetingDate.toLocaleString([], {
+				weekday: 'short',
+				month: 'short',
+				day: 'numeric',
+				year: 'numeric',
+				hour: '2-digit',
+				minute: '2-digit'
+			}))
+			return {
+				id: meeting[0],
+				title: meeting[1],
+				description: meeting[2],
+				rawTime: meetingDate,
+				startTime: startTime,
+				endTime: null,
+				link: meeting[4],
+				isJoined: meeting[5],
+				participants: meeting[6] ? meeting[6] : [],
+				status: meetingDate > now ? 'Upcoming' : 'Past',
+				transcriptItems: meeting[7] ? meeting[7] : [],
+				agendaItems: meetingTypes.scrum.defaultAgendaItems,
+				insights: meeting[9] ? meeting[9] : [],
+			}
+		})
+
+		const upcoming = formattedMeetings.filter(meeting => meeting.rawTime > now)
+		const existing = formattedMeetings.filter(meeting => meeting.rawTime <= now)
+		return { upcoming, existing }
+	}
+    
     const modals = useModalStates();
     return (
-        <div className="p-4">
+        <div className="p-4" style={{ width: '100%' }}>
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-bold">MojoMosaic Meeting Facilitator</h1>
                 <div className="space-x-2">
@@ -91,8 +129,8 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
                                 className="cursor-pointer"
                                 onClick={() => onMeetingSelect(meeting.id)}
                             >
-                                <CardHeader>
-                                    <CardTitle>{meeting.title}</CardTitle>
+                                <CardHeader className='d-flex'>
+                                    <CardTitle className='d-inline'>{meeting.title}</CardTitle>
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -145,15 +183,18 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
                 </TabsContent>
             </Tabs>
 
-            {/* Add Meeting Dialog */}
             <MeetingDialog
                 isOpen={modals.addMeeting.isOpen}
-                onClose={modals.addMeeting.close}
-                setMeetings={setMeetings}
-                onMeetingAdded={() => setRefreshTrigger(prev => prev + 1)}
+                onClose={() => {
+                    modals.addMeeting.close();
+                    setSelectedMeeting(undefined);
+                    setEditMode(false);
+                }}
+                onMeetingUpdated={() => setRefreshTrigger(prev => prev + 1)}
+                mode={editMode ? 'edit' : 'add'}
+                initialData={selectedMeeting}
             />
-
-            {/* Create Meeting Type Dialog */}
+            
             <CreateMeetingTypeDialog
                 isOpen={modals.createMeetingType.isOpen}
                 onClose={modals.createMeetingType.close}
