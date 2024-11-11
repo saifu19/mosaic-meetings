@@ -1,4 +1,3 @@
-// MeetingDetail.tsx
 import { useReducer, useState, useEffect, useCallback} from 'react';
 import { useParams } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -15,7 +14,7 @@ import { meetingTypes } from '@/data/mockData'; // Update the path if `meetingTy
 import axios from 'axios';
 
 
-function MeetingDetail() {
+export const MeetingPage = () => {
     const { meetingId } = useParams();
     console.log("meeting:",meetingId)
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
@@ -167,5 +166,3 @@ const formatMeetings = (meetings: any[]): Meeting[] => {
         </TooltipProvider>
     );
 }
-
-export default MeetingDetail;

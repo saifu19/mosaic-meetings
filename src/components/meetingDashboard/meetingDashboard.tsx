@@ -7,7 +7,7 @@ import { KanbanColumn } from '@/types';
 import { initialKanbanColumns } from '@/data/mockData';
 
 
-function meetingDashboard() {
+export const MeetingDashboard = () => {
     
     const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>(initialKanbanColumns);
 
@@ -29,5 +29,3 @@ function meetingDashboard() {
         </TooltipProvider>
     );
 }
-
-export default meetingDashboard;

@@ -209,8 +209,8 @@
 
 // FacilitatorDashboard.tsx
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import MeetingDashboard from '../MeetingDashboard/MeetingDashboard';
-import MeetingDetail from '../MeetingPage/MeetingDetail';
+import { MeetingDashboard } from '@/components/MeetingDashboard/MeetingDashboard';
+import { MeetingPage } from '@/components/MeetingPage/MeetingPage';
 
 function FacilitatorDashboard() {
     return (
@@ -220,7 +220,7 @@ function FacilitatorDashboard() {
                 <Route path="/" element={<MeetingDashboard />} />
                 
                 {/* Meeting Detail Route */}
-                <Route path="/meeting/:meetingId" element={<MeetingDetail />} />
+                <Route path="/meeting/:meetingId" element={<MeetingPage />} />
             </Routes>
         </Router>
     );
