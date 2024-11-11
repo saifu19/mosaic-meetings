@@ -1,4 +1,3 @@
-// MeetingDashboard.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
