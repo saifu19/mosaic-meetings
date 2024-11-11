@@ -209,8 +209,8 @@
 
 // FacilitatorDashboard.tsx
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import MeetingDashboard from '@/components/MeetingDashboard/MeetingDashboard';
-import MeetingDetail from '@/components/MeetingPage/MeetingDetail';
+import MeetingDashboard from '../MeetingDashboard/MeetingDashboard';
+import MeetingDetail from '../MeetingPage/MeetingDetail';
 
 function FacilitatorDashboard() {
     return (

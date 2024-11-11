@@ -131,7 +131,6 @@ const formatMeetings = (meetings: any[]): Meeting[] => {
                             onStartMeeting={startMeeting}
                             onStopMeeting={stopMeeting}
                             onShowQRCode={modals.qrCode.open}
-                            // onBack={() => navigate('/')} 
                             formatTime={formatTime}
                         />
 
