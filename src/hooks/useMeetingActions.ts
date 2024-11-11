@@ -1,12 +1,13 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Meeting } from '@/types';
 import axios from 'axios'
 
 
 interface UseMeetingActionsProps {
-    selectedMeeting: Meeting | null;
+    selectedMeeting: Meeting | null | undefined;
     setMeetings: React.Dispatch<React.SetStateAction<Meeting[]>>;
     dispatch: React.Dispatch<any>;
+
 }
 
 export const useMeetingActions = ({
@@ -15,7 +16,8 @@ export const useMeetingActions = ({
 	// const [isEnding, setIsEnding] = useState(false),
     selectedMeeting,
     setMeetings,
-    dispatch
+    dispatch,
+    
 }: UseMeetingActionsProps) => {
     const startMeeting = useCallback(async () => {
 
@@ -35,6 +37,7 @@ export const useMeetingActions = ({
                     }
                     : meeting
             ));
+            
 
             let data = JSON.stringify({
                 "url": selectedMeeting.link,
@@ -81,6 +84,7 @@ export const useMeetingActions = ({
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
             dispatch({ type: 'END_MEETING' });
+
             setMeetings(prevMeetings => prevMeetings.map(meeting =>
                 meeting.id === selectedMeeting.id
                     ? { ...meeting, endTime: new Date() }
@@ -121,6 +125,6 @@ export const useMeetingActions = ({
             dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to end meeting' });
         }
     }, [selectedMeeting, dispatch, setMeetings]);
-
+ 
     return { startMeeting, stopMeeting };
 }; 

@@ -1,4 +1,6 @@
 import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -14,7 +16,7 @@ interface MeetingSidebarProps {
     onStartMeeting: () => void;
     onStopMeeting: () => void;
     onShowQRCode: () => void;
-    onBack: () => void;
+    // onBack: () => void;
 }
 
 export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
@@ -25,15 +27,19 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
     onStartMeeting,
     onStopMeeting,
     onShowQRCode,
-    onBack,
-}) => {
+    // onBack,
+}) => 
+    {
+
+    const navigate = useNavigate();
+
     return (
         <div className="w-64 bg-white shadow-md p-4 flex flex-col">
             <h2 className="text-xl font-bold mb-4">{meeting.title}</h2>
             <p className="text-gray-600 mb-4">{meeting.description}</p>
             <div className="flex items-center mb-4">
                 <Clock className="h-5 w-5 text-gray-500 mr-2" />
-                <span className="font-semibold">{formatTime(meetingDuration)}</span>
+                {/* <span className="font-semibold">{formatTime(meetingDuration)}</span> */}
             </div>
             {meetingState.status === 'not_started' && (
                 <Button
@@ -76,7 +82,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
                 <QrCode className="mr-2 h-4 w-4" />
                 Show QR Code
             </Button>
-            <Button onClick={onBack} variant="ghost" className="mt-2">
+            <Button onClick = { () => navigate('/')} variant="ghost" className="mt-2">
                 Back to Meetings
             </Button>
         </div>
