@@ -1,7 +1,5 @@
 import { useState, useReducer, useMemo, useCallback, useEffect } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { AddMeetingDialog } from '@/components/AddMeetingDialog/AddMeetingDialog';
-import { CreateMeetingTypeDialog } from '@/components/CreateMeetingTypeDialog/CreateMeetingTypeDialog';
 import { MeetingsAndKanbanView } from '@/components/MeetingsAndKanbanView/MeetingsAndKanbanView';
 
 import useMeetingTimer from '@/hooks/useMeetingTimer';
@@ -151,8 +149,7 @@ function FacilitatorDashboard() {
 							kanbanColumns={kanbanColumns}
 							setKanbanColumns={setKanbanColumns}
 							onMeetingSelect={updateSelectedMeeting}
-							onAddMeetingClick={modals.addMeeting.open}
-							onCreateMeetingTypeClick={modals.createMeetingType.open}
+							setRefreshTrigger={setRefreshTrigger}
 						/>
 					</div>
 				)}
@@ -177,19 +174,7 @@ function FacilitatorDashboard() {
 					/>
 				)}
 
-				{/* Add Meeting Dialog */}
-				<AddMeetingDialog
-					isOpen={modals.addMeeting.isOpen}
-					onClose={modals.addMeeting.close}
-					setMeetings={setMeetings}
-					onMeetingAdded={() => setRefreshTrigger(prev => prev + 1)}
-				/>
-
-				{/* Create Meeting Type Dialog */}
-				<CreateMeetingTypeDialog
-					isOpen={modals.createMeetingType.isOpen}
-					onClose={modals.createMeetingType.close}
-				/>
+				
 			</div>
 		</TooltipProvider>
 	);

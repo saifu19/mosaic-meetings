@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Meeting, MeetingType } from '@/types';
 import {
     Dialog,
@@ -20,27 +20,40 @@ import {
 import { meetingTypes } from '@/data/mockData';
 import axios from 'axios';
 
-interface AddMeetingDialogProps {
+interface MeetingDialogProps {
     isOpen: boolean;
     onClose: () => void;
     setMeetings: React.Dispatch<React.SetStateAction<Meeting[]>>;
     onMeetingAdded: () => void;
+    initialData?: Meeting;
+    mode: 'add' | 'edit';
 }
 
-export const AddMeetingDialog = ({
+export const MeetingDialog = ({
     isOpen,
     onClose,
     setMeetings,
     onMeetingAdded,
-}: AddMeetingDialogProps) => {
+    initialData,
+    mode,
+}: MeetingDialogProps) => {
 
-    const [formData, setFormData] = React.useState<Partial<Meeting>>({
+    const [formData, setFormData] = useState<Partial<Meeting>>({
         title: '',
         description: '',
         link: '',
         startTime: null,
         participants: [],
     });
+
+    useEffect(() => {
+        if (initialData && mode === 'edit') {
+            setFormData({
+                ...initialData,
+                startTime: initialData.startTime ? new Date(initialData.startTime) : null,
+            });
+        }
+    }, [initialData]);
 
     const handleAddMeeting = async (formData: Partial<Meeting>) => {
         const meetingToAdd: Meeting = {
@@ -86,6 +99,36 @@ export const AddMeetingDialog = ({
         setMeetings(prevMeetings => [...prevMeetings, meetingToAdd]);
     };
 
+    const handleEditMeeting = async (formData: Partial<Meeting>) => {
+		try {
+			const localDate = new Date(formData.startTime || Date.now())
+			const formattedDate = localDate.getUTCFullYear() + '-' +
+				String(localDate.getUTCMonth() + 1).padStart(2, '0') + '-' +
+				String(localDate.getUTCDate()).padStart(2, '0') + ' ' +
+				String(localDate.getUTCHours()).padStart(2, '0') + ':' +
+				String(localDate.getUTCMinutes()).padStart(2, '0') + ':00'
+
+			const data = {
+				meeting_id: initialData?.id,
+				meeting_title: formData.title,
+				meeting_time: formattedDate,
+				meeting_agenda: formData.description,
+				meeting_link: formData.link
+			}
+
+			await axios({
+				method: 'POST',
+				url: 'https://mojomosaic.live:8443/update-meeting',
+				headers: { 'Content-Type': 'application/json' },
+				data: data
+			})
+
+			setMeetings(prevMeetings => prevMeetings.map(meeting => meeting.id === initialData?.id ? { ...meeting, ...formData } : meeting));
+		} catch (error) {
+			console.error('Error updating meeting:', error)
+		}
+	}
+
     const handleMeetingTypeChange = (type: MeetingType) => {
         setFormData(prev => ({
             ...prev,
@@ -95,7 +138,11 @@ export const AddMeetingDialog = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await handleAddMeeting(formData);
+        if (mode === 'add') {
+            await handleAddMeeting(formData);
+        } else {
+            await handleEditMeeting(formData);
+        }
         setFormData({ title: '', description: '', participants: [], link: '' });
         onMeetingAdded();
         onClose();
