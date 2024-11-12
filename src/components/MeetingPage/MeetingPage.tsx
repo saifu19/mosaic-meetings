@@ -19,7 +19,8 @@ export const MeetingPage = () => {
     const { meetingState, dispatch } = useMeeting();
     const meetingDuration = useMeetingTimer(meetingState.status === 'in_progress');
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-    
+
+
     const modals = useModalStates();
     
     const fetchMeetingById = async (meetingId: string): Promise<Meeting | null> => {
@@ -62,9 +63,11 @@ export const MeetingPage = () => {
                 if (meeting) {
                     setSelectedMeeting(meeting);
                     if (meeting.isJoined) {
-                        dispatch({ type: 'START_MEETING', status: 'in_progress' });
+                        localStartMeeting();
+                        // dispatch({ type: 'START_MEETING', status: 'in_progress' });
                     } else {
-                        dispatch({ type: 'END_MEETING', status: 'not_started' });
+                        localStopMeeting();
+                        // dispatch({ type: 'END_MEETING', status: 'not_started' });
                     }
                 } else {
                     setSelectedMeeting(null);
@@ -78,18 +81,48 @@ export const MeetingPage = () => {
         loadMeetingById();
     }, [meetingId ]);
     
+
+
+
     const { startMeeting, stopMeeting } = useMeetingActions({
         selectedMeeting,
         setSelectedMeeting,
         dispatch,
     });
     
+    //function to set the timer
+    const localStartMeeting = () => {
+        console.log("start local func")
+        const startTime = Date.now();
+        localStorage.setItem('meetingStartTime', startTime.toString());
+        dispatch({ type: 'START_MEETING', status: 'in_progress' });
+    };
+
+    const localStopMeeting = () => {
+        console.log("end local func")
+        localStorage.removeItem('meetingStartTime');
+        dispatch({ type: 'END_MEETING', status: 'not_started' });
+    };
+
+    // Wrapper functions for starting and stopping meetings
+    const handleStartMeeting = () => {
+        startMeeting(); // Call the hook-based startMeeting
+        localStartMeeting(); // Call the local startMeeting function
+    };
+
+    const handleStopMeeting = () => {
+        stopMeeting(); // Call the hook-based stopMeeting
+        localStopMeeting(); // Call the local stopMeeting function
+    };
+
 	// Utility Functions
 	const formatTime = useCallback((seconds: number) => {
 		const mins = Math.floor(seconds / 60);
 		const secs = seconds % 60;
 		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 	}, []);
+
+    
 
     return (
         <TooltipProvider>
@@ -101,8 +134,8 @@ export const MeetingPage = () => {
                             meeting={selectedMeeting}
                             meetingState={meetingState}
                             meetingDuration={meetingDuration}
-                            onStartMeeting={startMeeting}
-                            onStopMeeting={stopMeeting}
+                            onStartMeeting={handleStartMeeting}
+                            onStopMeeting={handleStopMeeting}
                             onShowQRCode={modals.qrCode.open}
                             formatTime={formatTime}
                         />
