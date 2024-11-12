@@ -1,4 +1,4 @@
-import { useReducer, useState, useEffect, useCallback} from 'react';
+import { useState, useEffect, useCallback} from 'react';
 import { useParams } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { MeetingSidebar } from '@/components/MeetingSidebar/MeetingSidebar';
@@ -8,41 +8,46 @@ import { QRCodeModal } from '@/components/QRCodeModal/QRCodeModal';
 import useMeetingTimer from '@/hooks/useMeetingTimer';
 import { useModalStates } from '@/hooks/useModalStates';
 import { useMeetingActions } from '@/hooks/useMeetingActions';
-import { meetingReducer } from '@/reducers/meetingReducer';
 import { Meeting } from '@/types';
-import { meetingTypes } from '@/data/mockData'; // Update the path if `meetingTypes` is defined elsewhere
+import { meetingTypes } from '@/data/mockData';
 import axios from 'axios';
+import { useMeeting } from '@/components/MeetingContext/MeetingContext';
 
 
 export const MeetingPage = () => {
     const { meetingId } = useParams();
+    const { meetingState, dispatch } = useMeeting();
+    const meetingDuration = useMeetingTimer(meetingState.status === 'in_progress');
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
     
     const modals = useModalStates();
-    const [meetingState, dispatch] = useReducer(meetingReducer, {
-        status: 'not_started',
-        duration: 0,
-        currentAgendaItemIndex: 0,
-        error: null,
-        isLoading: false,
-    });
-
-    // Modify fetchMeetings to return Meeting[]
-    const fetchMeetings = async (): Promise<Meeting[]> => {
-        try {
-            const response = await axios.get('https://mojomosaic.live:8443/get-meetings');
-            return formatMeetings(response.data); // formatMeetings should return Meeting[]
-        } catch (error) {
-            console.error('Error fetching meetings:', error);
-            return []; // Return an empty array if there’s an error
-        }
-    };
     
-    // Use fetchMeetings to fetch and set the specific meeting by ID
     const fetchMeetingById = async (meetingId: string): Promise<Meeting | null> => {
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: `https://mojomosaic.live:8443/get-meeting-by-id?meeting_id=${meetingId}`,
+            headers: { 
+              'Content-Type': 'application/json'
+            }
+          };
+          
+        const response = await axios.request(config);
         try {
-            const meetings = await fetchMeetings();
-            const targetMeeting = meetings.find(meeting => String(meeting.id) === meetingId) || null;
+            const targetMeeting : Meeting = {
+                id: response.data[0],
+                title: response.data[1],
+                description: response.data[2],
+                link: response.data[4],
+                startTime: response.data[3],
+                endTime: response.data[8] ? new Date(response.data[8]) : null,
+                isJoined: response.data[5],
+                agendaItems: meetingTypes.scrum.defaultAgendaItems,
+                transcriptItems: response.data[6] || [],
+                insights: response.data[9] || [],
+                participants: response.data[7] || [],
+            }
+            console.log(targetMeeting);
             return targetMeeting;
         } catch (error) {
             console.error('Error fetching the specific meeting:', error);
@@ -50,32 +55,6 @@ export const MeetingPage = () => {
         }
     };
 
-    // Ensure formatMeetings returns Meeting[]
-    const formatMeetings = (meetings: any[]): Meeting[] => {
-        const now = new Date();
-        
-        return meetings.map(meeting => {
-            const meetingDate = new Date(meeting[3] || new Date());
-            
-            return {
-                id: meeting[0],
-                title: meeting[1],
-                description: meeting[2],
-                rawTime: meetingDate,
-                startTime: meetingDate,
-                endTime: meeting[8] ? new Date(meeting[8]) : null,
-                link: meeting[4],
-                isJoined: meeting[5],
-                participants: meeting[6] || [],
-                status: meetingDate > now ? 'Upcoming' : 'Past',
-                transcriptItems: meeting[7] || [],
-                agendaItems: meetingTypes.scrum.defaultAgendaItems,
-                insights: meeting[9] || [],
-            };
-        });
-    };
-
-    // Set the fetched meeting in useEffect
     useEffect(() => {
         const loadMeetingById = async () => {
             try {
@@ -98,8 +77,7 @@ export const MeetingPage = () => {
         
         loadMeetingById();
     }, [meetingId ]);
-
-    const meetingDuration = useMeetingTimer(meetingState.status === 'in_progress');
+    
     const { startMeeting, stopMeeting } = useMeetingActions({
         selectedMeeting,
         setSelectedMeeting,

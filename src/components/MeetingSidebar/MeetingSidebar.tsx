@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { QrCode, Loader2, Play, X } from 'lucide-react';
 import { Meeting, MeetingState } from '@/types';
 import { Clock } from '@/components/ui/icons/clock';
+import axios from 'axios';
 
 interface MeetingSidebarProps {
     meeting: Meeting;
@@ -27,8 +28,27 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
     onStartMeeting,
     onStopMeeting,
     onShowQRCode,
-    // onBack,
 }) => {
+    const [showJoin, setShowJoin] = useState(true);
+
+    const updateShowJoin = async () => {
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: 'https://mojomosaic.live:8443/get-joined-meetings',
+            headers: { }
+          };
+          
+        const response = await axios.request(config);
+        if (response.data === null) {
+            setShowJoin(false);
+        }
+    }
+
+    useEffect(() => {
+        updateShowJoin();
+    }, []);
+
     const navigate = useNavigate();
     return (
         <div className="w-64 bg-white shadow-md p-4 flex flex-col">
@@ -41,7 +61,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
             {(meetingState.status === 'not_started' || !meeting.isJoined) ? (
                 <Button
                     onClick={onStartMeeting}
-                    disabled={meetingState.isLoading}
+                    disabled={meetingState.isLoading || showJoin}
                     className="mb-4 bg-green-500 hover:bg-green-600 text-white"
                     aria-busy={meetingState.isLoading}
                     aria-label="Start meeting"

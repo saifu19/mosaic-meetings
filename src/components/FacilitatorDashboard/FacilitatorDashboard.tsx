@@ -211,6 +211,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { MeetingDashboard } from '@/components/MeetingDashboard/MeetingDashboard';
 import { MeetingPage } from '@/components/MeetingPage/MeetingPage';
+import { MeetingProvider } from '@/components/MeetingContext/MeetingContext';
 
 function FacilitatorDashboard() {
     return (
@@ -220,7 +221,7 @@ function FacilitatorDashboard() {
                 <Route path="/" element={<MeetingDashboard />} />
                 
                 {/* Meeting Detail Route */}
-                <Route path="/meeting/:meetingId" element={<MeetingPage />} />
+                <Route path="/meeting/:meetingId" element={<MeetingProvider><MeetingPage /></MeetingProvider>} />
             </Routes>
         </Router>
     );

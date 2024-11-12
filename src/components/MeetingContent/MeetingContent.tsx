@@ -64,13 +64,8 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                                 meeting={meeting}
                                 currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
                                 onInsightClick={setSelectedInsight}
-                                isSimulationEnabled={meetingState.status === 'in_progress'}
-                                onNewTranscript={(newTranscripts) => {
-                                    setSelectedMeeting(selectedMeeting ? {
-                                        ...selectedMeeting,
-                                        transcriptItems: [...selectedMeeting.transcriptItems, ...newTranscripts]
-                                    } : null);
-                                }}
+                                meetingState={meetingState}
+                                transcriptItems={meeting.transcriptItems}
                             />
                         </CardContent>
                     </Card>
