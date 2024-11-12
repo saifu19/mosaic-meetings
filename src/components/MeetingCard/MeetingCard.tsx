@@ -1,15 +1,18 @@
 // import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar } from 'lucide-react';
+import { Calendar, Pencil } from 'lucide-react';
 import { Meeting } from "@/types"
+import { Button } from "../ui/button";
 
 interface MeetingCardProps {
     meeting: Meeting
+    onEditMeetingClick: (meeting: Meeting) => void
 }
 
 export const MeetingCard = ({
-    meeting
+    meeting,
+    onEditMeetingClick
 }: MeetingCardProps) => {
     const navigate = useNavigate()
 
@@ -17,9 +20,25 @@ export const MeetingCard = ({
         navigate(`/meeting/${id}`);
     };
     return (
-        <Card key={meeting.id} className='cursor-pointer' onClick={() => onMeetingSelect(meeting.id)}>
+        <Card
+            key={meeting.id}
+            className="cursor-pointer"
+            onClick={() => onMeetingSelect(meeting.id)}
+        >
             <CardHeader>
-                <CardTitle>{meeting.title}</CardTitle>
+                <div className="flex justify-between items-center">
+                    <CardTitle>{meeting.title}</CardTitle>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                            e.stopPropagation();  // Prevent card click event
+                            onEditMeetingClick(meeting);
+                        }}
+                    >
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent>
                 <p>{meeting.description}</p>

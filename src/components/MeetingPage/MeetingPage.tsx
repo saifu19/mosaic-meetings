@@ -80,9 +80,6 @@ export const MeetingPage = () => {
         
         loadMeetingById();
     }, [meetingId]);
-    
-
-
 
     const { startMeeting, stopMeeting } = useMeetingActions({
         selectedMeeting,
@@ -104,15 +101,24 @@ export const MeetingPage = () => {
         dispatch({ type: 'END_MEETING', status: 'not_started' });
     };
 
-    // Wrapper functions for starting and stopping meetings
-    const handleStartMeeting = () => {
-        startMeeting(); // Call the hook-based startMeeting
-        localStartMeeting(); // Call the local startMeeting function
+    const handleStartMeeting = async () => {
+        dispatch({ type: 'SET_LOADING', isLoading: true });
+        try {
+            await startMeeting();
+            localStartMeeting();
+        } finally {
+            dispatch({ type: 'SET_LOADING', isLoading: false });
+        }
     };
 
-    const handleStopMeeting = () => {
-        stopMeeting(); // Call the hook-based stopMeeting
-        localStopMeeting(); // Call the local stopMeeting function
+    const handleStopMeeting = async () => {
+        dispatch({ type: 'SET_LOADING', isLoading: true });
+        try {
+            await stopMeeting();
+            localStopMeeting();
+        } finally {
+            dispatch({ type: 'SET_LOADING', isLoading: false });
+        }
     };
 
 	// Utility Functions

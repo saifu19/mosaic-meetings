@@ -15,7 +15,7 @@ export const useMeetingActions = ({
 }: UseMeetingActionsProps) => {
     const startMeeting = useCallback(async () => {
         if (!selectedMeeting) return;
-        dispatch({ type: 'SET_LOADING', payload: true });
+        dispatch({ type: 'SET_LOADING', payload: true, isLoading: true });
         try {
             console.log("meeting started")
             let data = JSON.stringify({
@@ -34,8 +34,8 @@ export const useMeetingActions = ({
             };
 
             await axios.request(config);
-
-            dispatch({ type: 'START_MEETING', status: 'in_progress' });
+            
+            dispatch({ type: 'START_MEETING', status: 'in_progress', isLoading: false });
             setSelectedMeeting({
                 ...selectedMeeting, 
                 isJoined: true,
@@ -52,7 +52,7 @@ export const useMeetingActions = ({
 
     const stopMeeting = useCallback(async () => {
         if (!selectedMeeting) return;
-        dispatch({ type: 'SET_LOADING', payload: true });
+        dispatch({ type: 'SET_LOADING', payload: true, isLoading: true });
         try {
             let data = JSON.stringify({
                 "callback_url": "https://api.mojomosaic.xyz/transcript/54"
@@ -69,7 +69,7 @@ export const useMeetingActions = ({
             };
             console.log("everything is fine till now");
             await axios.request(config);
-            dispatch({ type: 'END_MEETING', status: 'not_started' });
+            dispatch({ type: 'END_MEETING', status: 'not_started', isLoading: false });
             setSelectedMeeting({
                 ...selectedMeeting,
                 isJoined: false,
