@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Pencil, Plus, Settings } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,23 +12,20 @@ import { CreateMeetingTypeDialog } from '@/components/CreateMeetingTypeDialog/Cr
 import { useModalStates } from '@/hooks/useModalStates';
 import axios from 'axios';
 import { meetingTypes } from '@/data/mockData';
+import { initialKanbanColumns } from '@/data/mockData';
 
-interface MeetingsAndKanbanViewProps {
-    kanbanColumns: KanbanColumn[];
-    setKanbanColumns: React.Dispatch<React.SetStateAction<KanbanColumn[]>>;
-    onMeetingSelect: (id: string) => void;
-}
-
-export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
-    kanbanColumns,
-    setKanbanColumns,
-    onMeetingSelect
-}) => {
+export const MeetingsAndKanbanView = () => {
     const [existingMeetings, setExistingMeetings] = useState<Meeting[]>([]);
     const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | undefined>(undefined);
     const [editMode, setEditMode] = useState(false);
+    const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>(initialKanbanColumns);
+    const navigate = useNavigate();
+
+    const onMeetingSelect = (id: string) => {
+        navigate(`/meeting/${id}`);
+    };
 
     const onEditMeetingClick = (meeting: Meeting) => {
         setSelectedMeeting(meeting);
@@ -149,9 +147,7 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
                                     <div className="mt-2 flex items-center">
                                         <Calendar className="mr-2 h-4 w-4" />
                                         <span>
-                                            {meeting.startTime
-                                                ? new Date(meeting.startTime).toLocaleString()
-                                                : 'Not started'}
+                                            {meeting.startTime ? new Date(meeting.startTime).toLocaleString() : 'Not started'}
                                         </span>
                                     </div>
                                 </CardContent>
@@ -162,15 +158,29 @@ export const MeetingsAndKanbanView: React.FC<MeetingsAndKanbanViewProps> = ({
                 <TabsContent value="previous">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {existingMeetings.map(meeting => (
-                            <Card key={meeting.id}>
+                            <Card key={meeting.id} className='cursor-pointer' onClick={() => onMeetingSelect(meeting.id)}>
                                 <CardHeader>
-                                    <CardTitle>{meeting.title}</CardTitle>
+                                    <div className='flex justify-between items-center'>
+                                        <CardTitle>{meeting.title}</CardTitle>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={(e) => {
+                                                e.stopPropagation();  // Prevent card click event
+                                                onEditMeetingClick(meeting);
+                                            }}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
                                     <p>{meeting.description}</p>
                                     <div className="mt-2 flex items-center">
                                         <Calendar className="mr-2 h-4 w-4" />
-                                        <span>{new Date(meeting.startTime!).toLocaleString()}</span>
+                                        <span>
+                                            {meeting.startTime ? new Date(meeting.startTime).toLocaleString() : 'Not started'}
+                                        </span>
                                     </div>
                                 </CardContent>
                             </Card>

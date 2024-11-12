@@ -76,7 +76,7 @@ export const MeetingPage = () => {
         };
         
         loadMeetingById();
-    }, [meetingId ]);
+    }, [meetingId]);
     
     const { startMeeting, stopMeeting } = useMeetingActions({
         selectedMeeting,
