@@ -17,6 +17,7 @@ export const useMeetingActions = ({
         if (!selectedMeeting) return;
         dispatch({ type: 'SET_LOADING', payload: true });
         try {
+            console.log("meeting started")
             let data = JSON.stringify({
                 "url": selectedMeeting.link,
                 "meeting_id": selectedMeeting.id
@@ -66,7 +67,7 @@ export const useMeetingActions = ({
                 },
                 data: data
             };
-    
+            console.log("everything is fine till now");
             await axios.request(config);
             dispatch({ type: 'END_MEETING', status: 'not_started' });
             setSelectedMeeting({
