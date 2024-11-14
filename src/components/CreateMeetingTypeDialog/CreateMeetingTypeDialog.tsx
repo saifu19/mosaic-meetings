@@ -9,8 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { meetingTypes } from '@/data/mockData';
-import { AgendaItem } from '@/types';
+import axios from 'axios';
 
 interface CreateMeetingTypeDialogProps {
     isOpen: boolean;
@@ -22,40 +21,51 @@ export const CreateMeetingTypeDialog = ({
     onClose
 }: CreateMeetingTypeDialogProps) => {
     const [formData, setFormData] = React.useState({
-        key: '',
         title: '',
         description: '',
         agendaTemplate: '',
     });
 
     const handleCreateMeetingType = (formData: {
-        key: string;
         title: string;
         description: string;
         agendaTemplate: string;
     }) => {
-        const defaultAgendaItems: AgendaItem[] = formData.agendaTemplate
+        const defaultAgendaItems: Object[] = formData.agendaTemplate
             .split('\n')
             .filter(Boolean)
-            .map((item, index) => ({
-                id: `${formData.key}-${index}`,
-                title: item,
-                duration: 15, // default duration
-                status: 'not_started',
-                notes: '',
-            }));
+            .map((item) => (item));
+        console.log(defaultAgendaItems);
 
-        meetingTypes[formData.key] = {
-            title: formData.title,
-            description: formData.description,
-            defaultAgendaItems,
+        let data = JSON.stringify({
+            "meeting_type": formData.title,
+            "description": formData.description,
+            "agenda_items": defaultAgendaItems,
+        });
+
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: 'https://mojomosaic.live:8443/create-meeting-type',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: data
         };
+
+        axios.request(config)
+            .then((response) => {
+                console.log(JSON.stringify(response.data));
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         handleCreateMeetingType(formData);
-        setFormData({ key: '', title: '', description: '', agendaTemplate: '' });
+        setFormData({ title: '', description: '', agendaTemplate: '' });
         onClose();
     };
 
@@ -66,15 +76,6 @@ export const CreateMeetingTypeDialog = ({
                     <DialogTitle>Create Meeting Type</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                        <label>Key</label>
-                        <Input
-                            value={formData.key}
-                            onChange={(e) => setFormData({ ...formData, key: e.target.value })}
-                            placeholder="e.g., sprint-planning"
-                            required
-                        />
-                    </div>
 
                     <div className="space-y-2">
                         <label>Title</label>

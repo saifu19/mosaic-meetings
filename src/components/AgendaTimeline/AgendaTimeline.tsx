@@ -24,12 +24,6 @@ export const AgendaTimeline = ({
     dispatch,
     isInProgress = false,
 }: AgendaTimelineProps) => {
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
     const handleMoveToNext = () => {
         const nextIndex = currentAgendaItemIndex + 1;
         if (nextIndex >= meeting.agendaItems.length) return;
@@ -57,6 +51,7 @@ export const AgendaTimeline = ({
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-muted'
                         }`}
+                        data-id={item.id}
                         style={{
                             flexBasis: `${98 / meeting.agendaItems.length}%`,
                             maxWidth: `${98 / meeting.agendaItems.length}%`,
@@ -64,7 +59,7 @@ export const AgendaTimeline = ({
                     >
                         <div className="flex flex-col space-y-1">
                             <h3 className="font-semibold">{item.title}</h3>
-                            <p className="text-sm">{formatTime(item.duration)}</p>
+                            {/* <p className="text-sm">{formatTime(item.duration)}</p> */}
                             {/* <p className="text-sm text-muted-foreground">Status: {item.status}</p> */}
                         </div>
                     </div>

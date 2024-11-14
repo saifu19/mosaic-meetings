@@ -17,12 +17,13 @@ export const useMeetingActions = ({
         if (!selectedMeeting) return;
         dispatch({ type: 'SET_LOADING', payload: true, isLoading: true });
         try {
-            console.log("meeting started")
             let data = JSON.stringify({
                 "url": selectedMeeting.link,
-                "meeting_id": selectedMeeting.id
+                "meeting_id": selectedMeeting.id,
+                "agenda_id": selectedMeeting.agendaItems[0].id
             });
-    
+            console.log(data)
+            
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
@@ -84,4 +85,4 @@ export const useMeetingActions = ({
     }, [selectedMeeting, dispatch, setSelectedMeeting]);
 
     return { startMeeting, stopMeeting };
-}; 
+};

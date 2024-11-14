@@ -5,6 +5,7 @@ import { AgendaTimeline } from '@/components/AgendaTimeline/AgendaTimeline';
 import { TranscriptView } from '@/components/TranscriptView/TranscriptView';
 import { InsightsPanel } from '@/components/InsightsPanel/InsightsPanel';
 import { Meeting, MeetingState, AIInsight } from '@/types';
+import axios from 'axios';
 
 interface MeetingContentProps {
     meeting: Meeting;
@@ -40,8 +41,24 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                     meeting={meeting}
                     currentAgendaItemId={meeting?.agendaItems[meetingState.currentAgendaItemIndex]?.id || ''}
                     currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
-                    onAgendaItemChange={(itemId) => {
+                    onAgendaItemChange={async (itemId) => {
                         const newIndex = meeting?.agendaItems.findIndex(item => item.id === itemId) || 0;
+
+                        let data = JSON.stringify({
+                            "agenda_id": itemId
+                        });
+
+                        let config = {
+                            method: 'post',
+                            maxBodyLength: Infinity,
+                            url: 'https://mojomosaic.live:8443/update-agenda-id',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            data: data
+                        };
+
+                        await axios.request(config)
                         dispatch({ type: 'SET_AGENDA_ITEM_INDEX', payload: newIndex });
                     }}
                     dispatch={dispatch}

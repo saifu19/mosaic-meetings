@@ -25,6 +25,7 @@ export const mockMeetings: Meeting[] = [
         participants: mockParticipants,
         link: "",
         isJoined: false,
+        meetingType: 'scrum'
     },
     {
         id: "2",
@@ -42,6 +43,7 @@ export const mockMeetings: Meeting[] = [
         participants: mockParticipants,
         link: "",
         isJoined: false,
+        meetingType: 'sprint-planning'
     },
 ];
 

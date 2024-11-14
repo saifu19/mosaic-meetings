@@ -50,6 +50,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
     }, []);
 
     const navigate = useNavigate();
+    
     return (
         <div className="w-64 bg-white shadow-md p-4 flex flex-col">
             <h2 className="text-xl font-bold mb-4">{meeting.title}</h2>

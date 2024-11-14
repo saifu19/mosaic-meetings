@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Meeting, MeetingType } from '@/types';
+import { Meeting, MeetingType, AgendaItem } from '@/types';
 import {
     Dialog,
     DialogContent,
@@ -17,8 +17,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { meetingTypes } from '@/data/mockData';
 import axios from 'axios';
+import { Loader2 } from 'lucide-react';
 
 interface MeetingDialogProps {
     isOpen: boolean;
@@ -35,11 +35,14 @@ export const MeetingDialog = ({
     initialData,
     mode,
 }: MeetingDialogProps) => {
+    const [meetingTypes, setMeetingTypes] = useState<MeetingType[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [formData, setFormData] = useState<Partial<Meeting>>({
         title: '',
         description: '',
         link: '',
+        meetingType: '',
         startTime: null,
         participants: [],
     });
@@ -52,6 +55,7 @@ export const MeetingDialog = ({
                 link: '',
                 startTime: null,
                 participants: [],
+                meetingType: '',
             });
         } else if (mode === 'edit' && initialData) {
             setFormData({
@@ -59,24 +63,22 @@ export const MeetingDialog = ({
                 startTime: initialData.startTime ? new Date(initialData.startTime) : null,
             });
         }
+
+        fetchMeetingTypes();
     }, [isOpen, mode, initialData]);
 
+    const fetchMeetingTypes = async () => {
+        const response = await axios.get('https://mojomosaic.live:8443/get-meeting-types');
+        const meetingTypes: MeetingType[] = response.data.map((type: any) => ({
+            key: type[0],
+            title: type[1],
+        }));
+        setMeetingTypes(meetingTypes);
+    }
+
     const handleAddMeeting = async (formData: Partial<Meeting>) => {
-        const meetingToAdd: Meeting = {
-            id: Date.now().toString(),
-            title: formData.title || '',
-            description: formData.description || '',
-            startTime: null,
-            endTime: null,
-            agendaItems: formData.agendaItems || [],
-            participants: [],
-            transcriptItems: [],
-            insights: [],
-            link: formData.link || '',
-            isJoined: false,
-        };
         const localDate = new Date(formData.startTime || Date.now());
-        meetingToAdd.startTime = localDate;
+
         const formattedDate = localDate.getUTCFullYear() + '-' +
             String(localDate.getUTCMonth() + 1).padStart(2, '0') + '-' +
             String(localDate.getUTCDate()).padStart(2, '0') + ' ' +
@@ -84,10 +86,11 @@ export const MeetingDialog = ({
             String(localDate.getUTCMinutes()).padStart(2, '0') + ':00'
 
         const meetingData = {
-            meeting_title: meetingToAdd.title,
-            meeting_agenda: meetingToAdd.description,
-            meeting_link: meetingToAdd.link,
+            meeting_title: formData.title,
+            meeting_agenda: formData.description,
+            meeting_link: formData.link,
             meeting_time: formattedDate,
+            meeting_type_id: formData.meetingType,
         }
 
         const config = {
@@ -100,58 +103,92 @@ export const MeetingDialog = ({
         }
 
         await axios(config)
-
-
-        // setMeetings(prevMeetings => [...prevMeetings, meetingToAdd]);
     };
 
     const handleEditMeeting = async (formData: Partial<Meeting>) => {
-		try {
-			const localDate = new Date(formData.startTime || Date.now())
-			const formattedDate = localDate.getUTCFullYear() + '-' +
-				String(localDate.getUTCMonth() + 1).padStart(2, '0') + '-' +
-				String(localDate.getUTCDate()).padStart(2, '0') + ' ' +
-				String(localDate.getUTCHours()).padStart(2, '0') + ':' +
-				String(localDate.getUTCMinutes()).padStart(2, '0') + ':00'
+        try {
+            const localDate = new Date(formData.startTime || Date.now())
+            const formattedDate = localDate.getUTCFullYear() + '-' +
+                String(localDate.getUTCMonth() + 1).padStart(2, '0') + '-' +
+                String(localDate.getUTCDate()).padStart(2, '0') + ' ' +
+                String(localDate.getUTCHours()).padStart(2, '0') + ':' +
+                String(localDate.getUTCMinutes()).padStart(2, '0') + ':00'
 
-			const data = {
-				meeting_id: initialData?.id,
-				meeting_title: formData.title,
-				meeting_time: formattedDate,
-				meeting_agenda: formData.description,
-				meeting_link: formData.link
-			}
+            const data = {
+                meeting_id: initialData?.id,
+                meeting_title: formData.title,
+                meeting_time: formattedDate,
+                meeting_agenda: formData.description,
+                meeting_link: formData.link
+            }
 
-			await axios({
-				method: 'POST',
-				url: 'https://mojomosaic.live:8443/update-meeting',
-				headers: { 'Content-Type': 'application/json' },
-				data: data
-			})
+            await axios({
+                method: 'POST',
+                url: 'https://mojomosaic.live:8443/update-meeting',
+                headers: { 'Content-Type': 'application/json' },
+                data: data
+            })
 
-			// setMeetings(prevMeetings => prevMeetings.map(meeting => meeting.id === initialData?.id ? { ...meeting, ...formData } : meeting));
-		} catch (error) {
-			console.error('Error updating meeting:', error)
-		}
-	}
+            // setMeetings(prevMeetings => prevMeetings.map(meeting => meeting.id === initialData?.id ? { ...meeting, ...formData } : meeting));
+        } catch (error) {
+            console.error('Error updating meeting:', error)
+        }
+    }
 
-    const handleMeetingTypeChange = (type: MeetingType) => {
-        setFormData(prev => ({
-            ...prev,
-            agendaItems: meetingTypes[type].defaultAgendaItems
-        }));
+    const handleMeetingTypeChange = (typeKey: string) => {
+        const selectedType = meetingTypes.find(type => type.key === typeKey);
+        if (selectedType) {
+            setFormData(prev => ({
+                ...prev,
+                meetingType: typeKey,
+                agendaItems: getDefaultAgendaItems(typeKey)
+            }));
+        }
+    };
+
+    const getDefaultAgendaItems = (typeKey: string) => {
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: `https://mojomosaic.live:8443/get-agenda-items?meeting_type_id=${typeKey}`,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        let defaultAgendaItems: AgendaItem[] = []
+        axios.request(config)
+            .then((response) => {
+                defaultAgendaItems = response.data.map((item: any) => ({
+                    id: item[0],
+                    title: item[1],
+                    duration: 90,
+                }));
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+        return defaultAgendaItems || [];
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (mode === 'add') {
-            await handleAddMeeting(formData);
-        } else {
-            await handleEditMeeting(formData);
+        try {
+            e.preventDefault();
+            setIsSubmitting(true);
+            if (mode === 'add') {
+                await handleAddMeeting(formData);
+            } else {
+                await handleEditMeeting(formData);
+            }
+            setFormData({ title: '', description: '', participants: [], link: '' });
+            onMeetingUpdated();
+            onClose();
+        } catch (error) {
+            console.error('Error submitting form:', error);
+        } finally {
+            setIsSubmitting(false);
         }
-        setFormData({ title: '', description: '', participants: [], link: '' });
-        onMeetingUpdated();
-        onClose();
     };
 
     return (
@@ -199,14 +236,17 @@ export const MeetingDialog = ({
                     <div className="space-y-2">
                         <label>Meeting Type</label>
                         <Select
+                            value={formData.meetingType || 'Select meeting type'}
                             onValueChange={handleMeetingTypeChange}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select meeting type" />
+                                <SelectValue>
+                                    {meetingTypes.find(type => type.key === formData.meetingType)?.title || "Select meeting type"}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
-                                {Object.entries(meetingTypes).map(([key, type]) => (
-                                    <SelectItem key={key} value={key}>
+                                {meetingTypes.map((type: MeetingType) => (
+                                    <SelectItem key={type.key} value={type.key}>
                                         {type.title}
                                     </SelectItem>
                                 ))}
@@ -215,12 +255,19 @@ export const MeetingDialog = ({
                     </div>
 
                     <DialogFooter>
-                        <Button type="submit">
+                        <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            aria-busy={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
                             {mode === 'add' ? 'Create Meeting' : 'Update Meeting'}
                         </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 };

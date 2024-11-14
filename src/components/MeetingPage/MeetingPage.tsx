@@ -9,7 +9,6 @@ import useMeetingTimer from '@/hooks/useMeetingTimer';
 import { useModalStates } from '@/hooks/useModalStates';
 import { useMeetingActions } from '@/hooks/useMeetingActions';
 import { Meeting } from '@/types';
-import { meetingTypes } from '@/data/mockData';
 import axios from 'axios';
 import { useMeeting } from '@/components/MeetingContext/MeetingContext';
 
@@ -43,10 +42,14 @@ export const MeetingPage = () => {
                 startTime: response.data[3],
                 endTime: response.data[8] ? new Date(response.data[8]) : null,
                 isJoined: response.data[5],
-                agendaItems: meetingTypes.scrum.defaultAgendaItems,
-                transcriptItems: response.data[6] || [],
+                agendaItems: response.data[8].map((item: string[]) => ({
+                    id: item[0],
+                    title: item[1],
+                })),
+                transcriptItems: response.data[7] || [],
                 insights: response.data[9] || [],
-                participants: response.data[7] || [],
+                participants: response.data[10] || [],
+                meetingType: response.data[6],
             }
             console.log(targetMeeting);
             return targetMeeting;
@@ -127,8 +130,6 @@ export const MeetingPage = () => {
 		const secs = seconds % 60;
 		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 	}, []);
-
-    
 
     return (
         <TooltipProvider>

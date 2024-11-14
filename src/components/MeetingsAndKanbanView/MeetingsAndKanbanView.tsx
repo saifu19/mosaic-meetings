@@ -8,7 +8,6 @@ import { MeetingDialog } from '@/components/MeetingDialog/MeetingDialog';
 import { CreateMeetingTypeDialog } from '@/components/CreateMeetingTypeDialog/CreateMeetingTypeDialog';
 import { useModalStates } from '@/hooks/useModalStates';
 import axios from 'axios';
-import { meetingTypes } from '@/data/mockData';
 import { initialKanbanColumns } from '@/data/mockData';
 import { MeetingCard } from '@/components/MeetingCard/MeetingCard';
 
@@ -34,9 +33,6 @@ export const MeetingsAndKanbanView = () => {
                 console.log(upcoming, existing)
                 setUpcomingMeetings(upcoming)
                 setExistingMeetings(existing)
-                // setMeetings([...upcoming, ...existing])
-                // const isAnyMeetingJoined = existing.some(meeting => meeting.isJoined) || upcoming.some(meeting => meeting.isJoined)
-                // setHasJoinedMeeting(isAnyMeetingJoined)
             } catch (error: unknown) {
                 if (error instanceof Error) {
                     console.error('Error fetching meetings:', error.message)
@@ -71,11 +67,15 @@ export const MeetingsAndKanbanView = () => {
                 endTime: null,
                 link: meeting[4],
                 isJoined: meeting[5],
-                participants: meeting[6] ? meeting[6] : [],
+                participants: meeting[10] ? meeting[10] : [],
                 status: meetingDate > now ? 'Upcoming' : 'Past',
                 transcriptItems: meeting[7] ? meeting[7] : [],
-                agendaItems: meetingTypes.scrum.defaultAgendaItems,
+                agendaItems: meeting[8] ? meeting[8].map((item: string[]) => ({
+                    id: item[0],
+                    title: item[1],
+                })) : [],
                 insights: meeting[9] ? meeting[9] : [],
+                meetingType: meeting[6],
             }
         })
 

@@ -1,7 +1,12 @@
 // Meeting Types
 export type MeetingStatus = 'not_started' | 'in_progress' | 'ended';
 export type InsightType = 'think' | 'reflect' | 'plan';
-export type MeetingType = 'scrum' | 'sprint-planning' | 'traction-level10' | 'custom' | string;
+export interface MeetingType {
+    key: string;
+    title: string;
+    description: string;
+    defaultAgendaItems: AgendaItem[];
+}
 
 // State Interfaces
 export interface MeetingState {
@@ -20,6 +25,7 @@ export interface Meeting {
 	startTime: Date | null;
 	endTime: Date | null;
 	isJoined: boolean;
+	meetingType: string;
 	agendaItems: AgendaItem[];
 	transcriptItems: TranscriptItem[];
 	insights: AIInsight[];
