@@ -3,7 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Pencil } from 'lucide-react';
 import { Meeting } from "@/types"
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MeetingCardProps {
     meeting: Meeting
@@ -27,7 +33,24 @@ export const MeetingCard = ({
         >
             <CardHeader>
                 <div className="flex justify-between items-center">
-                    <CardTitle>{meeting.title}</CardTitle>
+                    <CardTitle className="flex items-center space-x-2 whitespace-nowrap">
+                        <span className="truncate mr-2">{meeting.title}</span>
+                        {Boolean(meeting.isJoined) && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="relative flex h-3 w-3 flex-shrink-0 bg-transparent">
+                                            <div className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></div>
+                                            <div className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></div>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Active</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
+                    </CardTitle>
                     <Button
                         variant="ghost"
                         size="icon"

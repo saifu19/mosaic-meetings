@@ -30,7 +30,6 @@ export const MeetingsAndKanbanView = () => {
             try {
                 const response = await axios.get('https://mojomosaic.live:8443/get-meetings')
                 const { upcoming, existing } = formatMeetings(response.data)
-                console.log(upcoming, existing)
                 setUpcomingMeetings(upcoming)
                 setExistingMeetings(existing)
             } catch (error: unknown) {

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback} from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { MeetingSidebar } from '@/components/MeetingSidebar/MeetingSidebar';
 import { MeetingContent } from '@/components/MeetingContent/MeetingContent';
@@ -18,23 +18,22 @@ export const MeetingPage = () => {
     const { meetingState, dispatch } = useMeeting();
     const meetingDuration = useMeetingTimer(meetingState.status === 'in_progress');
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-
-
+    const navigate = useNavigate();
     const modals = useModalStates();
-    
+
     const fetchMeetingById = async (meetingId: string): Promise<Meeting | null> => {
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
             url: `https://mojomosaic.live:8443/get-meeting-by-id?meeting_id=${meetingId}`,
-            headers: { 
-              'Content-Type': 'application/json'
+            headers: {
+                'Content-Type': 'application/json'
             }
-          };
-          
+        };
+
         const response = await axios.request(config);
         try {
-            const targetMeeting : Meeting = {
+            const targetMeeting: Meeting = {
                 id: response.data[0],
                 title: response.data[1],
                 description: response.data[2],
@@ -62,7 +61,7 @@ export const MeetingPage = () => {
     useEffect(() => {
         const loadMeetingById = async () => {
             try {
-                const meeting = await fetchMeetingById(String(meetingId)); 
+                const meeting = await fetchMeetingById(String(meetingId));
                 if (meeting) {
                     setSelectedMeeting(meeting);
                     if (meeting.isJoined) {
@@ -80,17 +79,26 @@ export const MeetingPage = () => {
                 setSelectedMeeting(null);
             }
         };
-        
+
         loadMeetingById();
     }, [meetingId]);
+
+    const handleNavigation = useCallback((path: string) => {
+        if (meetingState.status === 'in_progress' || selectedMeeting?.isJoined) {
+            const confirmNavigation = window.confirm('Meeting is in progress. Are you sure you want to leave?');
+            if (!confirmNavigation) {
+                return;
+            }
+        }
+        navigate(path);
+    }, [meetingState.status, selectedMeeting?.isJoined, navigate]);
 
     const { startMeeting, stopMeeting } = useMeetingActions({
         selectedMeeting,
         setSelectedMeeting,
         dispatch,
     });
-    
-    //function to set the timer
+
     const localStartMeeting = () => {
         console.log("start local func")
         const startTime = Date.now();
@@ -124,17 +132,49 @@ export const MeetingPage = () => {
         }
     };
 
-	// Utility Functions
-	const formatTime = useCallback((seconds: number) => {
-		const mins = Math.floor(seconds / 60);
-		const secs = seconds % 60;
-		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-	}, []);
+    useEffect(() => {
+        // Push initial state to enable popstate handling
+        window.history.pushState({ path: window.location.pathname }, '', window.location.pathname);
+    
+        const handlePopState = async () => {
+            if (meetingState.status === 'in_progress' || selectedMeeting?.isJoined) {
+                const confirmNavigation = window.confirm('Meeting is in progress. Are you sure you want to leave?');
+                if (!confirmNavigation) {
+                    window.history.pushState({ path: window.location.pathname }, '', window.location.pathname);
+                    return;
+                }
+            }
+        };
+    
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (meetingState.status === 'in_progress' || selectedMeeting?.isJoined) {
+                const message = 'Meeting is in progress. Changes you made may not be saved.';
+                e.preventDefault();
+                e.returnValue = message;
+                return message;
+            }
+        };
+    
+        window.addEventListener('popstate', handlePopState);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+    
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [meetingState.status, selectedMeeting?.isJoined, handleStopMeeting]);
+
+    // Utility Functions
+    const formatTime = useCallback((seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }, []);
 
     return (
         <TooltipProvider>
             <div className="flex h-screen bg-gray-100">
-                <div>{}</div>
+                <div>{ }</div>
                 {selectedMeeting && (
                     <>
                         <MeetingSidebar
@@ -145,6 +185,7 @@ export const MeetingPage = () => {
                             onStopMeeting={handleStopMeeting}
                             onShowQRCode={modals.qrCode.open}
                             formatTime={formatTime}
+                            onNavigate={handleNavigation}
                         />
 
                         <MeetingContent
@@ -165,9 +206,9 @@ export const MeetingPage = () => {
                         selectedMeetingId={selectedMeeting?.id ?? null}
                         onClose={modals.insight.close} kanbanColumns={[]} setKanbanColumns={function (): void {
                             throw new Error('Function not implemented.');
-                        } } setMeetings={function (): void {
+                        }} setMeetings={function (): void {
                             throw new Error('Function not implemented.');
-                        } }                    />
+                        }} />
                 )}
 
                 {modals.qrCode.isOpen && (

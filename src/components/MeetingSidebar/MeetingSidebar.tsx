@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -17,6 +15,7 @@ interface MeetingSidebarProps {
     onStartMeeting: () => void;
     onStopMeeting: () => void;
     onShowQRCode: () => void;
+    onNavigate: (path: string) => void;
     // onBack: () => void;
 }
 
@@ -28,6 +27,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
     onStartMeeting,
     onStopMeeting,
     onShowQRCode,
+    onNavigate,
 }) => {
     const [showJoin, setShowJoin] = useState(true);
 
@@ -49,8 +49,6 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
         updateShowJoin();
     }, []);
 
-    const navigate = useNavigate();
-    
     return (
         <div className="w-64 bg-white shadow-md p-4 flex flex-col">
             <h2 className="text-xl font-bold mb-4">{meeting.title}</h2>
@@ -107,7 +105,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
                 <QrCode className="mr-2 h-4 w-4" />
                 Show QR Code
             </Button>
-            <Button onClick = { () => navigate('/')} variant="ghost" className="mt-2">
+            <Button onClick={() => onNavigate('/')}  variant="ghost" className="mt-2">
                 Back to Meetings
             </Button>
         </div>
