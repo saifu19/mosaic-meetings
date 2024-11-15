@@ -119,7 +119,8 @@ export const MeetingDialog = ({
                 meeting_title: formData.title,
                 meeting_time: formattedDate,
                 meeting_agenda: formData.description,
-                meeting_link: formData.link
+                meeting_link: formData.link,
+                meeting_type_id: formData.meetingType
             }
 
             await axios({
@@ -181,7 +182,7 @@ export const MeetingDialog = ({
             } else {
                 await handleEditMeeting(formData);
             }
-            setFormData({ title: '', description: '', participants: [], link: '' });
+            setFormData({ title: '', description: '', participants: [], link: '', meetingType: '' });
             onMeetingUpdated();
             onClose();
         } catch (error) {

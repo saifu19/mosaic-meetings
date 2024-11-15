@@ -40,6 +40,13 @@ export const AgendaTimeline = ({
         onAgendaItemChange(meeting.agendaItems[nextIndex].id);
     };
 
+    const handleAgendaItemClick = (itemId: string) => {
+        const newIndex = meeting.agendaItems.findIndex(item => item.id === itemId);
+        if (!isInProgress) {
+            dispatch({ type: 'SET_AGENDA_ITEM_INDEX', payload: newIndex });
+        }
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
@@ -51,6 +58,7 @@ export const AgendaTimeline = ({
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-muted'
                         }`}
+                        onClick={() => handleAgendaItemClick(item.id)}
                         data-id={item.id}
                         style={{
                             flexBasis: `${98 / meeting.agendaItems.length}%`,

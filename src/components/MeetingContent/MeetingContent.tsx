@@ -1,6 +1,5 @@
 import React from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AgendaTimeline } from '@/components/AgendaTimeline/AgendaTimeline';
 import { TranscriptView } from '@/components/TranscriptView/TranscriptView';
 import { InsightsPanel } from '@/components/InsightsPanel/InsightsPanel';
@@ -42,8 +41,6 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                     currentAgendaItemId={meeting?.agendaItems[meetingState.currentAgendaItemIndex]?.id || ''}
                     currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
                     onAgendaItemChange={async (itemId) => {
-                        const newIndex = meeting?.agendaItems.findIndex(item => item.id === itemId) || 0;
-
                         let data = JSON.stringify({
                             "agenda_id": itemId
                         });
@@ -59,7 +56,6 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                         };
 
                         await axios.request(config)
-                        dispatch({ type: 'SET_AGENDA_ITEM_INDEX', payload: newIndex });
                     }}
                     dispatch={dispatch}
                     selectedMeeting={selectedMeeting}
@@ -71,22 +67,13 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
             {/* Meeting Content */}
             <div className="flex-1 flex space-x-4 overflow-hidden p-4">
                 {/* Transcript */}
-                <div className="w-1/2 overflow-hidden flex flex-col">
-                    <Card className="h-full flex flex-col">
-                        <CardHeader>
-                            <CardTitle>Meeting Transcript</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex-grow overflow-y-auto">
-                            <TranscriptView
-                                meeting={meeting}
-                                currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
-                                onInsightClick={setSelectedInsight}
-                                meetingState={meetingState}
-                                transcriptItems={meeting.transcriptItems}
-                            />
-                        </CardContent>
-                    </Card>
-                </div>
+                <TranscriptView
+                    meeting={meeting}
+                    currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
+                    onInsightClick={setSelectedInsight}
+                    meetingState={meetingState}
+                    transcriptItems={meeting.transcriptItems}
+                />
 
                 {/* AI Insights */}
                 <div className="w-1/2 overflow-hidden flex flex-col">

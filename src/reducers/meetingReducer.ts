@@ -5,7 +5,8 @@ type Action =
   | { type: 'END_MEETING'; status: 'not_started' }
   | { type: 'SET_ERROR'; payload: string }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'NEXT_AGENDA_ITEM' };
+  | { type: 'NEXT_AGENDA_ITEM' }
+  | { type: 'SET_AGENDA_ITEM_INDEX'; payload: number };
 
 export const meetingReducer = (state: MeetingState, action: Action): MeetingState => {
   switch (action.type) {
@@ -19,6 +20,8 @@ export const meetingReducer = (state: MeetingState, action: Action): MeetingStat
       return { ...state, isLoading: action.payload };
     case 'NEXT_AGENDA_ITEM':
       return { ...state, currentAgendaItemIndex: state.currentAgendaItemIndex + 1 };
+    case 'SET_AGENDA_ITEM_INDEX':
+      return { ...state, currentAgendaItemIndex: action.payload };
     default:
       return state;
   }

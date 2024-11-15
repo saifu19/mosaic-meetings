@@ -37,6 +37,7 @@ export const useMeetingActions = ({
             await axios.request(config);
             
             dispatch({ type: 'START_MEETING', status: 'in_progress', isLoading: false });
+            dispatch({ type: 'SET_AGENDA_ITEM_INDEX', payload: 0 });
             setSelectedMeeting({
                 ...selectedMeeting, 
                 isJoined: true,
