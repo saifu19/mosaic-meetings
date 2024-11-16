@@ -181,7 +181,6 @@ export const MeetingPage = () => {
                         />
 
                         <MeetingContent
-                            meeting={selectedMeeting}
                             meetingState={meetingState}
                             selectedMeetingId={selectedMeeting.id || ''}
                             dispatch={dispatch}

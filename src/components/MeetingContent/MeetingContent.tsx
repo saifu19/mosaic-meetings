@@ -7,7 +7,6 @@ import { Meeting, MeetingState, AIInsight } from '@/types';
 import axios from 'axios';
 
 interface MeetingContentProps {
-    meeting: Meeting;
     meetingState: MeetingState;
     selectedMeetingId: string;
     dispatch: React.Dispatch<any>;
@@ -17,7 +16,6 @@ interface MeetingContentProps {
 }
 
 export const MeetingContent: React.FC<MeetingContentProps> = ({
-    meeting,
     meetingState,
     dispatch,
     selectedMeeting,
@@ -37,8 +35,7 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
             <div className="bg-white shadow-md p-4 mb-4">
                 <h3 className="text-lg font-semibold mb-2">Agenda</h3>
                 <AgendaTimeline
-                    meeting={meeting}
-                    currentAgendaItemId={meeting?.agendaItems[meetingState.currentAgendaItemIndex]?.id || ''}
+                    currentAgendaItemId={selectedMeeting?.agendaItems[meetingState.currentAgendaItemIndex]?.id || ''}
                     currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
                     onAgendaItemChange={async (itemId) => {
                         let data = JSON.stringify({
@@ -68,17 +65,17 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
             <div className="flex-1 flex space-x-4 overflow-hidden p-4">
                 {/* Transcript */}
                 <TranscriptView
-                    meeting={meeting}
+                    meeting={selectedMeeting}
                     currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
                     onInsightClick={setSelectedInsight}
                     meetingState={meetingState}
-                    transcriptItems={meeting.transcriptItems}
+                    transcriptItems={selectedMeeting?.transcriptItems || []}
                 />
 
                 {/* AI Insights */}
                 <div className="w-1/2 overflow-hidden flex flex-col">
                     <InsightsPanel
-                        meeting={meeting}
+                        meeting={selectedMeeting}
                         currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
                         onInsightSelect={setSelectedInsight}
                         onNewInsight={(newInsight) => {

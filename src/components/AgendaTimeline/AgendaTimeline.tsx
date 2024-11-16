@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 
 interface AgendaTimelineProps {
-    meeting: Meeting;
     currentAgendaItemId: string;
     currentAgendaItemIndex: number;
     onAgendaItemChange: (itemId: string) => void;
@@ -15,7 +14,6 @@ interface AgendaTimelineProps {
 }
 
 export const AgendaTimeline = ({
-    meeting,
     currentAgendaItemId,
     currentAgendaItemIndex,
     onAgendaItemChange,
@@ -26,7 +24,8 @@ export const AgendaTimeline = ({
 }: AgendaTimelineProps) => {
     const handleMoveToNext = () => {
         const nextIndex = currentAgendaItemIndex + 1;
-        if (nextIndex >= meeting.agendaItems.length) return;
+        if (!selectedMeeting) return;
+        if (nextIndex >= selectedMeeting?.agendaItems.length) return;
 
         setSelectedMeeting(selectedMeeting ? {
             ...selectedMeeting,
@@ -37,11 +36,11 @@ export const AgendaTimeline = ({
 
         // Update current agenda item index
         dispatch({ type: 'NEXT_AGENDA_ITEM' });
-        onAgendaItemChange(meeting.agendaItems[nextIndex].id);
+        onAgendaItemChange(selectedMeeting.agendaItems[nextIndex].id);
     };
 
     const handleAgendaItemClick = (itemId: string) => {
-        const newIndex = meeting.agendaItems.findIndex(item => item.id === itemId);
+        const newIndex = selectedMeeting?.agendaItems.findIndex(item => item.id === itemId);
         if (!isInProgress) {
             dispatch({ type: 'SET_AGENDA_ITEM_INDEX', payload: newIndex });
         }
@@ -50,7 +49,7 @@ export const AgendaTimeline = ({
     return (
         <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
-                {meeting.agendaItems.map((item) => (
+                {selectedMeeting?.agendaItems.map((item) => (
                     <div
                         key={item.id}
                         className={`p-2 rounded-lg flex-1 ${
@@ -61,8 +60,8 @@ export const AgendaTimeline = ({
                         onClick={() => handleAgendaItemClick(item.id)}
                         data-id={item.id}
                         style={{
-                            flexBasis: `${98 / meeting.agendaItems.length}%`,
-                            maxWidth: `${98 / meeting.agendaItems.length}%`,
+                            flexBasis: `${98 / selectedMeeting.agendaItems.length}%`,
+                            maxWidth: `${98 / selectedMeeting.agendaItems.length}%`,
                         }}
                     >
                         <div className="flex flex-col space-y-1">
@@ -73,7 +72,7 @@ export const AgendaTimeline = ({
                     </div>
                 ))}
             </div>
-            {isInProgress && currentAgendaItemIndex < meeting.agendaItems.length - 1 && (
+            {isInProgress && currentAgendaItemIndex < (selectedMeeting?.agendaItems.length || 0) - 1 && (
                 <Button 
                     onClick={handleMoveToNext}
                     size="sm"
