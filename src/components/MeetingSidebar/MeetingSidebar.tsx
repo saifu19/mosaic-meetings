@@ -11,7 +11,6 @@ interface MeetingSidebarProps {
     meeting: Meeting;
     meetingState: MeetingState;
     meetingDuration: number;
-    formatTime: (seconds: number) => string;
     onStartMeeting: () => void;
     onStopMeeting: () => void;
     onShowQRCode: () => void;
@@ -23,7 +22,6 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
     meeting,
     meetingState,
     meetingDuration,
-    formatTime,
     onStartMeeting,
     onStopMeeting,
     onShowQRCode,
@@ -44,6 +42,12 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
             setShowJoin(false);
         }
     }
+
+    const formatTime = useCallback((seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }, []);
 
     useEffect(() => {
         updateShowJoin();

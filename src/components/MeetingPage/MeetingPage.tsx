@@ -164,13 +164,6 @@ export const MeetingPage = () => {
         };
     }, [meetingState.status, selectedMeeting?.isJoined, handleStopMeeting]);
 
-    // Utility Functions
-    const formatTime = useCallback((seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }, []);
-
     return (
         <TooltipProvider>
             <div className="flex h-screen bg-gray-100">
@@ -184,7 +177,6 @@ export const MeetingPage = () => {
                             onStartMeeting={handleStartMeeting}
                             onStopMeeting={handleStopMeeting}
                             onShowQRCode={modals.qrCode.open}
-                            formatTime={formatTime}
                             onNavigate={handleNavigation}
                         />
 
