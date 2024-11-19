@@ -5,6 +5,7 @@ import { TranscriptView } from '@/components/TranscriptView/TranscriptView';
 import { InsightsPanel } from '@/components/InsightsPanel/InsightsPanel';
 import { Meeting, MeetingState, AIInsight } from '@/types';
 import axios from 'axios';
+import { config as cfg } from '@/config/env';
 
 interface MeetingContentProps {
     meetingState: MeetingState;
@@ -45,7 +46,7 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                         let config = {
                             method: 'post',
                             maxBodyLength: Infinity,
-                            url: 'https://mojomosaic.live:8443/update-agenda-id',
+                            url: `${cfg.apiUrl}/api/update-agenda-id`,
                             headers: {
                                 'Content-Type': 'application/json'
                             },

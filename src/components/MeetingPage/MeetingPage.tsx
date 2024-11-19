@@ -8,9 +8,10 @@ import { QRCodeModal } from '@/components/QRCodeModal/QRCodeModal';
 import useMeetingTimer from '@/hooks/useMeetingTimer';
 import { useModalStates } from '@/hooks/useModalStates';
 import { useMeetingActions } from '@/hooks/useMeetingActions';
-import { Meeting } from '@/types';
+import { AgendaItem, Meeting, TranscriptItem } from '@/types';
 import axios from 'axios';
 import { useMeeting } from '@/components/MeetingContext/MeetingContext';
+import { config as cfg } from '@/config/env';
 
 
 export const MeetingPage = () => {
@@ -25,7 +26,7 @@ export const MeetingPage = () => {
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
-            url: `https://mojomosaic.live:8443/get-meeting-by-id?meeting_id=${meetingId}`,
+            url: `${cfg.apiUrl}/api/get-meeting-by-id?meeting_id=${meetingId}`,
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -34,21 +35,26 @@ export const MeetingPage = () => {
         const response = await axios.request(config);
         try {
             const targetMeeting: Meeting = {
-                id: response.data[0],
-                title: response.data[1],
-                description: response.data[2],
-                link: response.data[4],
-                startTime: response.data[3],
-                endTime: response.data[8] ? new Date(response.data[8]) : null,
-                isJoined: response.data[5],
-                agendaItems: response.data[8].map((item: string[]) => ({
-                    id: item[0],
-                    title: item[1],
+                id: response.data.meeting.id,
+                title: response.data.meeting.title,
+                description: response.data.meeting.agenda,
+                link: response.data.meeting.link,
+                startTime: response.data.meeting.time,
+                endTime: null,
+                isJoined: response.data.meeting.is_joined,
+                agendaItems: response.data.agenda_items.map((item: Partial<AgendaItem>) => ({
+                    id: item.id ? item.id : null,
+                    title: item.title ? item.title : null,
                 })),
-                transcriptItems: response.data[7] || [],
-                insights: response.data[9] || [],
-                participants: response.data[10] || [],
-                meetingType: response.data[6],
+                transcriptItems: response.data.transcripts.map((item: Partial<TranscriptItem>) => ({
+                    id: item.id ? item.id : null,
+                    content: item.content ? item.content : null,
+                    timestamp: item.timestamp ? item.timestamp : null,
+                    agendaItemId: item.agendaItemId ? item.agendaItemId : null,
+                })),
+                insights: [],
+                participants: [],
+                meetingType: response.data.meeting.type,
             }
             console.log(targetMeeting);
             return targetMeeting;

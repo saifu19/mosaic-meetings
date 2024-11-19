@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/tooltip";
 
 interface MeetingCardProps {
-    meeting: Meeting
-    onEditMeetingClick: (meeting: Meeting) => void
+    meeting: Partial<Meeting>
+    onEditMeetingClick: (meeting: Partial<Meeting>) => void
 }
 
 export const MeetingCard = ({
@@ -29,7 +29,7 @@ export const MeetingCard = ({
         <Card
             key={meeting.id}
             className="cursor-pointer"
-            onClick={() => onMeetingSelect(meeting.id)}
+            onClick={() => onMeetingSelect(meeting.id || '')}
         >
             <CardHeader>
                 <div className="flex justify-between items-center">

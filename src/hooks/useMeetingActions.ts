@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Meeting } from '@/types';
 import axios from 'axios';
+import { config as cfg } from '@/config/env';
 
 interface UseMeetingActionsProps {
     selectedMeeting: Meeting | null;
@@ -16,6 +17,7 @@ export const useMeetingActions = ({
     const startMeeting = useCallback(async () => {
         if (!selectedMeeting) return;
         dispatch({ type: 'SET_LOADING', payload: true, isLoading: true });
+        console.log("start meeting")
         try {
             let data = JSON.stringify({
                 "url": selectedMeeting.link,
@@ -27,7 +29,7 @@ export const useMeetingActions = ({
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'https://mojomosaic.live:8443/start-meeting',
+                url: `${cfg.apiUrl}/api/start-meeting`,
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -63,7 +65,7 @@ export const useMeetingActions = ({
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'https://mojomosaic.live:8443/end-meeting',
+                url: `${cfg.apiUrl}/api/end-meeting`,
                 headers: {
                     'Content-Type': 'application/json'
                 },

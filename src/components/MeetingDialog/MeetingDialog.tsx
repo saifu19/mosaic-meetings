@@ -19,12 +19,13 @@ import {
 } from '@/components/ui/select';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
+import { config as cfg } from '@/config/env';
 
 interface MeetingDialogProps {
     isOpen: boolean;
     onClose: () => void;
     onMeetingUpdated: () => void;
-    initialData?: Meeting;
+    initialData?: Partial<Meeting>;
     mode: 'add' | 'edit';
 }
 
@@ -68,10 +69,10 @@ export const MeetingDialog = ({
     }, [isOpen, mode, initialData]);
 
     const fetchMeetingTypes = async () => {
-        const response = await axios.get('https://mojomosaic.live:8443/get-meeting-types');
+        const response = await axios.get(`${cfg.apiUrl}/api/get-meeting-types`);
         const meetingTypes: MeetingType[] = response.data.map((type: any) => ({
-            key: type[0],
-            title: type[1],
+            key: type.id,
+            title: type.name,
         }));
         setMeetingTypes(meetingTypes);
     }
@@ -86,16 +87,18 @@ export const MeetingDialog = ({
             String(localDate.getUTCMinutes()).padStart(2, '0') + ':00'
 
         const meetingData = {
-            meeting_title: formData.title,
-            meeting_agenda: formData.description,
-            meeting_link: formData.link,
-            meeting_time: formattedDate,
-            meeting_type_id: formData.meetingType,
+            title: formData.title,
+            agenda: formData.description,
+            link: formData.link === '' ? "https://placeholder.com" : formData.link,
+            time: formattedDate,
+            type: formData.meetingType,
         }
+
+        console.log('meetingData', meetingData)
 
         const config = {
             method: 'post',
-            url: 'https://mojomosaic.live:8443/create-meeting',
+            url: `${cfg.apiUrl}/api/create-meeting`,
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -115,17 +118,17 @@ export const MeetingDialog = ({
                 String(localDate.getUTCMinutes()).padStart(2, '0') + ':00'
 
             const data = {
-                meeting_id: initialData?.id,
-                meeting_title: formData.title,
-                meeting_time: formattedDate,
-                meeting_agenda: formData.description,
-                meeting_link: formData.link,
-                meeting_type_id: formData.meetingType
+                id: initialData?.id,
+                title: formData.title,
+                time: formattedDate,
+                agenda: formData.description,
+                link: formData.link,
+                type: formData.meetingType
             }
 
             await axios({
                 method: 'POST',
-                url: 'https://mojomosaic.live:8443/update-meeting',
+                url: `${cfg.apiUrl}/api/update-meeting`,
                 headers: { 'Content-Type': 'application/json' },
                 data: data
             })
@@ -151,7 +154,7 @@ export const MeetingDialog = ({
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
-            url: `https://mojomosaic.live:8443/get-agenda-items?meeting_type_id=${typeKey}`,
+            url: `${cfg.apiUrl}/api/get-agenda-items?meeting_type_id=${typeKey}`,
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -161,8 +164,8 @@ export const MeetingDialog = ({
         axios.request(config)
             .then((response) => {
                 defaultAgendaItems = response.data.map((item: any) => ({
-                    id: item[0],
-                    title: item[1],
+                    id: item.id,
+                    title: item.title,
                     duration: 90,
                 }));
             })

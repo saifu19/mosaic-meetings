@@ -10,16 +10,17 @@ import { useModalStates } from '@/hooks/useModalStates';
 import axios from 'axios';
 import { initialKanbanColumns } from '@/data/mockData';
 import { MeetingCard } from '@/components/MeetingCard/MeetingCard';
+import { config as cfg } from '@/config/env';
 
 export const MeetingsAndKanbanView = () => {
-    const [existingMeetings, setExistingMeetings] = useState<Meeting[]>([]);
-    const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
+    const [existingMeetings, setExistingMeetings] = useState<Partial<Meeting>[]>([]);
+    const [upcomingMeetings, setUpcomingMeetings] = useState<Partial<Meeting>[]>([]);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const [selectedMeeting, setSelectedMeeting] = useState<Meeting | undefined>(undefined);
+    const [selectedMeeting, setSelectedMeeting] = useState<Partial<Meeting> | undefined>(undefined);
     const [editMode, setEditMode] = useState(false);
     const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>(initialKanbanColumns);
 
-    const onEditMeetingClick = (meeting: Meeting) => {
+    const onEditMeetingClick = (meeting: Partial<Meeting>) => {
         setSelectedMeeting(meeting);
         setEditMode(true);
         modals.addMeeting.open();
@@ -28,8 +29,9 @@ export const MeetingsAndKanbanView = () => {
     useEffect(() => {
         const fetchMeetings = async () => {
             try {
-                const response = await axios.get('https://mojomosaic.live:8443/get-meetings')
+                const response = await axios.get(`${cfg.apiUrl}/api/get-meetings`)
                 const { upcoming, existing } = formatMeetings(response.data)
+                console.log(upcoming, existing)
                 setUpcomingMeetings(upcoming)
                 setExistingMeetings(existing)
             } catch (error: unknown) {
@@ -48,7 +50,7 @@ export const MeetingsAndKanbanView = () => {
         const now = new Date()
 
         const formattedMeetings = meetings.map(meeting => {
-            const meetingDate = meeting[3] ? new Date(meeting[3]) : new Date()
+            const meetingDate = meeting.time ? new Date(meeting.time) : new Date()
             const startTime = new Date(meetingDate.toLocaleString([], {
                 weekday: 'short',
                 month: 'short',
@@ -58,28 +60,30 @@ export const MeetingsAndKanbanView = () => {
                 minute: '2-digit'
             }))
             return {
-                id: meeting[0],
-                title: meeting[1],
-                description: meeting[2],
-                rawTime: meetingDate,
+                id: meeting.id,
+                title: meeting.title,
+                description: meeting.agenda,
+                rawTime: new Date(meeting.time),
                 startTime: startTime,
                 endTime: null,
-                link: meeting[4],
-                isJoined: meeting[5],
+                link: meeting.link,
+                isJoined: meeting.is_joined,
                 participants: meeting[10] ? meeting[10] : [],
                 status: meetingDate > now ? 'Upcoming' : 'Past',
-                transcriptItems: meeting[7] ? meeting[7] : [],
-                agendaItems: meeting[8] ? meeting[8].map((item: string[]) => ({
-                    id: item[0],
-                    title: item[1],
-                })) : [],
-                insights: meeting[9] ? meeting[9] : [],
-                meetingType: meeting[6],
+                // transcriptItems: meeting[7] ? meeting[7] : [],
+                // agendaItems: meeting[8] ? meeting[8].map((item: string[]) => ({
+                //     id: item[0],
+                //     title: item[1],
+                // })) : [],
+                // insights: meeting[9] ? meeting[9] : [],
+                meetingType: meeting.type,
             }
         })
-
+        console.log(formattedMeetings)
         const upcoming = formattedMeetings.filter(meeting => meeting.rawTime > now)
+        console.log(upcoming)
         const existing = formattedMeetings.filter(meeting => meeting.rawTime <= now)
+        console.log(existing)
         return { upcoming, existing }
     }
 

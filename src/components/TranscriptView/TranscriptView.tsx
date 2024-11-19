@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TranscriptItem, AIInsight, Meeting, MeetingState } from '@/types';
 // import { Brain } from 'lucide-react';
-import io from 'socket.io-client';
+// Remove these imports
+// import { io, Socket } from 'socket.io-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { config as cfg } from '@/config/env';
 
 interface TranscriptViewProps {
     meeting: Meeting | null;
@@ -19,17 +21,17 @@ export const TranscriptView = ({
     meetingState,
     transcriptItems
 }: TranscriptViewProps) => {
-    const [socket, setSocket] = useState<any>(null);
+    const [socket, setSocket] = useState<WebSocket | null>(null);
     const [localTranscriptItems, setLocalTranscriptItems] = useState<TranscriptItem[]>([]);
 
     const allTranscriptItems = useMemo(() => {
         const meetingTranscripts = transcriptItems.map((item) => {
             return {
-                id: item[0],
-                content: item[1],
+                id: item.id,
+                content: item.content,
                 speaker: ['John', 'Alice', 'Bob', 'Sarah'][Math.floor(Math.random() * 4)],
-                timestamp: item[2],
-                agendaItemId: item[4],
+                timestamp: item.timestamp,
+                agendaItemId: item.agendaItemId,
             }
         })
 
@@ -43,62 +45,86 @@ export const TranscriptView = ({
     }, [meeting, currentAgendaItemIndex]);
 
     useEffect(() => {
+        console.log('allTranscriptItems', allTranscriptItems)
+
         if (!meeting?.id || !meeting.isJoined || meetingState.status !== 'in_progress') {
             if (socket) {
-                console.log('Disconnecting socket due to meeting state change');
-                socket.disconnect();
+                console.log('Closing WebSocket due to meeting state change');
+                socket.close();
                 setSocket(null);
             }
             return;
         }
-
-        console.log('Initializing socket connection for meeting:', meeting.id);
-
-        const newSocket = io('https://mojomosaic.live:8443', {
-            transports: ['websocket', 'polling'],
-            path: '/socket.io/',
-            secure: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-        });
-
-        newSocket.on('connect', () => {
-            console.log('Socket Connected ✅ - ID:', newSocket.id);
-            setSocket(newSocket);
-        });
-
-        newSocket.on('connect_error', (error) => {
-            console.error('Socket Connection Error ❌:', error);
-            setSocket(null);
-        });
-
-        newSocket.on('disconnect', (reason) => {
-            console.log('Socket Disconnected ⚠️:', reason);
-            setSocket(null);
-        });
-
-        newSocket.on('transcription', (data: any) => {
-            console.log('Raw transcription data received:', data);
-            if (data.meeting_id === meeting.id) {
-                const newTranscript: TranscriptItem = {
-                    id: Date.now().toString(),
-                    speaker: ['John', 'Alice', 'Bob', 'Sarah'][Math.floor(Math.random() * 4)],
-                    content: data.text,
-                    timestamp: new Date().toLocaleTimeString(),
-                    agendaItemId: currentAgendaItemId || ''
-                };
-                console.log('New Transcript Created 📝:', newTranscript);
-                setLocalTranscriptItems(prev => [...prev, newTranscript]);
-            } else {
-                console.log('Meeting ID mismatch, transcript ignored ❌');
-            }
-        });
-
-        // Cleanup
+    
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+        const RECONNECT_DELAY = 2000;
+    
+        function connect() {
+            console.log('Initializing WebSocket connection for meeting:', meeting?.id);
+            
+            // Use secure WebSocket protocol and the correct port
+            const wsUrl = `${cfg.wsUrl}/ws/transcription/?meeting_id=${meeting?.id}`;
+            console.log('Connecting to:', wsUrl);
+            
+            const newSocket = new WebSocket(wsUrl);
+    
+            newSocket.onopen = () => {
+                console.log('WebSocket Connected ✅');
+                reconnectAttempts = 0;
+                setSocket(newSocket);
+            };
+    
+            newSocket.onerror = (error) => {
+                console.error('WebSocket Connection Error ❌:', error);
+                // Don't set socket to null here, wait for onclose
+            };
+    
+            newSocket.onclose = (event) => {
+                console.log('WebSocket Disconnected ⚠️:', event.reason);
+                setSocket(null);
+    
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    console.log(`Attempting to reconnect... (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+                    setTimeout(connect, RECONNECT_DELAY);
+                } else {
+                    console.log('Max reconnection attempts reached');
+                }
+            };
+    
+            newSocket.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('Raw transcription data received:', data);
+                    
+                    if (data.meeting_id === meeting?.id) {
+                        const newTranscript: TranscriptItem = {
+                            id: Date.now().toString(),
+                            speaker: ['John', 'Alice', 'Bob', 'Sarah'][Math.floor(Math.random() * 4)],
+                            content: data.text,
+                            timestamp: new Date().toLocaleTimeString(),
+                            agendaItemId: currentAgendaItemId || ''
+                        };
+                        console.log('New Transcript Created 📝:', newTranscript);
+                        setLocalTranscriptItems(prev => [...prev, newTranscript]);
+                    }
+                } catch (error) {
+                    console.error('Error processing message:', error);
+                }
+            };
+    
+            return newSocket;
+        }
+    
+        const newSocket = connect();
+    
         return () => {
-            console.log('Cleaning up socket connection');
-            newSocket.disconnect();
-            setSocket(null);
+            console.log('Cleaning up WebSocket connection');
+            if (newSocket) {
+                newSocket.close();
+                setSocket(null);
+            }
         };
     }, [meeting?.id, meeting?.isJoined, meetingState.status, currentAgendaItemId]);
 

@@ -6,6 +6,7 @@ import { QrCode, Loader2, Play, X } from 'lucide-react';
 import { Meeting, MeetingState } from '@/types';
 import { Clock } from '@/components/ui/icons/clock';
 import axios from 'axios';
+import { config as cfg } from '@/config/env';
 
 interface MeetingSidebarProps {
     meeting: Meeting;
@@ -33,12 +34,12 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
-            url: 'https://mojomosaic.live:8443/get-joined-meetings',
+            url: `${cfg.apiUrl}/api/get-joined-meetings`,
             headers: { }
           };
           
         const response = await axios.request(config);
-        if (response.data === null) {
+        if (response.data === '') {
             setShowJoin(false);
         }
     }

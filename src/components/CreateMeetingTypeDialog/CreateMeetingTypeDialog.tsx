@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import axios from 'axios';
+import { config as cfg } from '@/config/env';
 
 interface CreateMeetingTypeDialogProps {
     isOpen: boolean;
@@ -46,7 +47,7 @@ export const CreateMeetingTypeDialog = ({
         let config = {
             method: 'post',
             maxBodyLength: Infinity,
-            url: 'https://mojomosaic.live:8443/create-meeting-type',
+            url: `${cfg.apiUrl}/api/create-meeting-type`,
             headers: {
                 'Content-Type': 'application/json'
             },
