@@ -48,15 +48,14 @@ export const MeetingPage = () => {
                 })),
                 transcriptItems: response.data.transcripts.map((item: Partial<TranscriptItem>) => ({
                     id: item.id ? item.id : null,
-                    content: item.content ? item.content : null,
+                    message: item.message ? item.message : null,
                     timestamp: item.timestamp ? item.timestamp : null,
-                    agendaItemId: item.agendaItemId ? item.agendaItemId : null,
+                    agenda: item.agenda ? item.agenda : null,
                 })),
                 insights: [],
                 participants: [],
                 meetingType: response.data.meeting.type,
             }
-            console.log(targetMeeting);
             return targetMeeting;
         } catch (error) {
             console.error('Error fetching the specific meeting:', error);
@@ -72,10 +71,25 @@ export const MeetingPage = () => {
                     setSelectedMeeting(meeting);
                     if (meeting.isJoined) {
                         localStartMeeting();
-                        // dispatch({ type: 'START_MEETING', status: 'in_progress' });
+
+                        let config = {
+                            method: 'get',
+                            maxBodyLength: Infinity,
+                            url: `${cfg.apiUrl}/api/get-agenda-id`,
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        };
+                
+                        const response = await axios.request(config);
+
+                        if(response.data.agenda_id !== null) {
+                            const currentAgendaItemId = response.data.agenda_id;
+                            const currentAgendaItemIndex = meeting.agendaItems.findIndex(item => item.id === currentAgendaItemId);
+                            dispatch({ type: 'SET_AGENDA_ITEM_INDEX', payload: currentAgendaItemIndex });
+                        }
                     } else {
                         localStopMeeting();
-                        // dispatch({ type: 'END_MEETING', status: 'not_started' });
                     }
                 } else {
                     setSelectedMeeting(null);
@@ -106,14 +120,12 @@ export const MeetingPage = () => {
     });
 
     const localStartMeeting = () => {
-        console.log("start local func")
         const startTime = Date.now();
         localStorage.setItem('meetingStartTime', startTime.toString());
         dispatch({ type: 'START_MEETING', status: 'in_progress' });
     };
 
     const localStopMeeting = () => {
-        console.log("end local func")
         localStorage.removeItem('meetingStartTime');
         dispatch({ type: 'END_MEETING', status: 'not_started' });
     };

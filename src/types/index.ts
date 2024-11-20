@@ -42,9 +42,9 @@ export interface AgendaItem {
 export interface TranscriptItem {
 	id: string;
 	speaker: string;
-	content: string;
+	message: string;
 	timestamp: string;
-	agendaItemId: string;
+	agenda: string;
 	aiInsight?: AIInsight;
 }
 

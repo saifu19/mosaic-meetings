@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TranscriptItem, AIInsight, Meeting, MeetingState } from '@/types';
 // import { Brain } from 'lucide-react';
 // Remove these imports
@@ -24,14 +24,16 @@ export const TranscriptView = ({
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [localTranscriptItems, setLocalTranscriptItems] = useState<TranscriptItem[]>([]);
 
+    const currentAgendaIndexRef = useRef(currentAgendaItemIndex);
+
     const allTranscriptItems = useMemo(() => {
         const meetingTranscripts = transcriptItems.map((item) => {
             return {
                 id: item.id,
-                content: item.content,
+                message: item.message,
                 speaker: ['John', 'Alice', 'Bob', 'Sarah'][Math.floor(Math.random() * 4)],
                 timestamp: item.timestamp,
-                agendaItemId: item.agendaItemId,
+                agenda: item.agenda,
             }
         })
 
@@ -45,8 +47,10 @@ export const TranscriptView = ({
     }, [meeting, currentAgendaItemIndex]);
 
     useEffect(() => {
-        console.log('allTranscriptItems', allTranscriptItems)
+        currentAgendaIndexRef.current = currentAgendaItemIndex;
+    }, [currentAgendaItemIndex]);
 
+    useEffect(() => {
         if (!meeting?.id || !meeting.isJoined || meetingState.status !== 'in_progress') {
             if (socket) {
                 console.log('Closing WebSocket due to meeting state change');
@@ -61,6 +65,10 @@ export const TranscriptView = ({
         const RECONNECT_DELAY = 2000;
     
         function connect() {
+            if (!meeting?.isJoined || meetingState.status !== 'in_progress') {
+                return null;
+            }
+
             console.log('Initializing WebSocket connection for meeting:', meeting?.id);
             
             // Use secure WebSocket protocol and the correct port
@@ -96,17 +104,16 @@ export const TranscriptView = ({
             newSocket.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    console.log('Raw transcription data received:', data);
                     
                     if (data.meeting_id === meeting?.id) {
+                        const currentAgendaId = meeting.agendaItems[currentAgendaIndexRef.current]?.id || '';
                         const newTranscript: TranscriptItem = {
                             id: Date.now().toString(),
                             speaker: ['John', 'Alice', 'Bob', 'Sarah'][Math.floor(Math.random() * 4)],
-                            content: data.text,
+                            message: data.text,
                             timestamp: new Date().toLocaleTimeString(),
-                            agendaItemId: currentAgendaItemId || ''
+                            agenda: currentAgendaId || ''
                         };
-                        console.log('New Transcript Created 📝:', newTranscript);
                         setLocalTranscriptItems(prev => [...prev, newTranscript]);
                     }
                 } catch (error) {
@@ -125,8 +132,9 @@ export const TranscriptView = ({
                 newSocket.close();
                 setSocket(null);
             }
+            reconnectAttempts = MAX_RECONNECT_ATTEMPTS;
         };
-    }, [meeting?.id, meeting?.isJoined, meetingState.status, currentAgendaItemId]);
+    }, [meeting?.id, meeting?.isJoined, meetingState.status]);
 
     return (
         <div className="w-1/2 overflow-hidden flex flex-col">
@@ -137,14 +145,14 @@ export const TranscriptView = ({
                 <CardContent className="flex-grow overflow-y-auto">
                     <div className="space-y-4">
                         {allTranscriptItems
-                            .filter(item => item.agendaItemId === currentAgendaItemId)
+                            .filter(item => item.agenda === currentAgendaItemId)
                             .map((item) => (
                                 <div key={item.id} className="p-4 bg-white rounded-lg shadow">
                                     <div className="flex items-center justify-between">
                                         <span className="font-bold">{item.speaker}</span>
                                         <span className="text-sm text-gray-500">{item.timestamp}</span>
                                     </div>
-                                    <p className="mt-2">{item.content}</p>
+                                    <p className="mt-2">{item.message}</p>
                                     {/* {item.aiInsight && (
                                         <div
                                             className="mt-2 p-2 bg-purple-50 rounded flex items-center space-x-2 cursor-pointer hover:bg-purple-100"

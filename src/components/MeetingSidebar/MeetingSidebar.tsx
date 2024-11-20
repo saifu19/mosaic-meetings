@@ -28,19 +28,23 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
     onShowQRCode,
     onNavigate,
 }) => {
-    const [showJoin, setShowJoin] = useState(true);
+    const [joinDisabled, setJoinDisabled] = useState(true);
 
-    const updateShowJoin = async () => {
+    const updateJoinDisabled = async () => {
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
             url: `${cfg.apiUrl}/api/get-joined-meetings`,
-            headers: { }
-          };
-          
+            headers: {}
+        };
+
         const response = await axios.request(config);
-        if (response.data === '') {
-            setShowJoin(false);
+        const isValidMeetingPlatform = meeting.link?.toLowerCase().includes('teams') ||
+            meeting.link?.toLowerCase().includes('zoom');
+        console.log(isValidMeetingPlatform);
+        if (response.data === '' && isValidMeetingPlatform) {
+            console.log('setting join disabled to false');
+            setJoinDisabled(false);
         }
     }
 
@@ -51,8 +55,8 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
     }, []);
 
     useEffect(() => {
-        updateShowJoin();
-    }, []);
+        updateJoinDisabled();
+    }, [meeting.link]);
 
     return (
         <div className="w-64 bg-white shadow-md p-4 flex flex-col">
@@ -65,7 +69,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
             {(meetingState.status === 'not_started' || !meeting.isJoined) ? (
                 <Button
                     onClick={onStartMeeting}
-                    disabled={meetingState.isLoading || showJoin}
+                    disabled={meetingState.isLoading || joinDisabled}
                     className="mb-4 bg-green-500 hover:bg-green-600 text-white"
                     aria-busy={meetingState.isLoading}
                     aria-label="Start meeting"
@@ -110,7 +114,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
                 <QrCode className="mr-2 h-4 w-4" />
                 Show QR Code
             </Button>
-            <Button onClick={() => onNavigate('/')}  variant="ghost" className="mt-2">
+            <Button onClick={() => onNavigate('/')} variant="ghost" className="mt-2">
                 Back to Meetings
             </Button>
         </div>
