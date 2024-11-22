@@ -91,7 +91,7 @@ export const MeetingDialog = ({
             agenda: formData.description,
             link: formData.link === '' ? "https://placeholder.com" : formData.link,
             time: formattedDate,
-            type: formData.meetingType,
+            meeting_type: formData.meetingType,
         }
 
         console.log('meetingData', meetingData)
@@ -123,7 +123,7 @@ export const MeetingDialog = ({
                 time: formattedDate,
                 agenda: formData.description,
                 link: formData.link,
-                type: formData.meetingType
+                meeting_type: formData.meetingType
             }
 
             await axios({

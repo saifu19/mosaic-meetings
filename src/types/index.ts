@@ -1,6 +1,6 @@
 // Meeting Types
 export type MeetingStatus = 'not_started' | 'in_progress' | 'ended';
-export type InsightType = 'think' | 'reflect' | 'plan';
+export type InsightType = 'requirements' | 'context' | 'action_items' | 'summary';
 export interface MeetingType {
     key: string;
     title: string;
@@ -50,11 +50,12 @@ export interface TranscriptItem {
 
 export interface AIInsight {
 	id: string;
-	content: string;
-	type: InsightType;
-	timestamp: string;
-	agendaItemId: string;
-	chatThread: ChatMessage[];
+	insight: string;
+	insight_type: InsightType;
+	created_at: string;
+	agenda: string;
+	start_transcript: string;
+	end_transcript: string;
 }
 
 export interface ChatMessage {

@@ -34,19 +34,19 @@ export const AIInsightModal = ({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>AI Insight - {insight.type}</DialogTitle>
+                    <DialogTitle>AI Insight - {insight.id}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                    <p>{insight.content}</p>
+                    <p>{insight.insight}</p>
 
-                    <div className="border rounded-lg p-4 max-h-[200px] overflow-y-auto">
+                    {/* <div className="border rounded-lg p-4 max-h-[200px] overflow-y-auto">
                         {insight.chatThread.map((message) => (
                             <div key={message.id} className="mb-2">
                                 <span className="font-bold">{message.sender}: </span>
                                 <span>{message.content}</span>
                             </div>
                         ))}
-                    </div>
+                    </div> */}
 
                     <div className="flex space-x-2">
                         <Input
@@ -62,7 +62,7 @@ export const AIInsightModal = ({
                         <Button
                             variant="outline"
                             onClick={() => {
-                                onAddToKanban(insight.content);
+                                onAddToKanban(insight.insight);
                                 onClose();
                             }}
                         >

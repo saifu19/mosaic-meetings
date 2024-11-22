@@ -78,13 +78,8 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                     <InsightsPanel
                         meeting={selectedMeeting}
                         currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
-                        onInsightSelect={setSelectedInsight}
-                        onNewInsight={(newInsight) => {
-                            setSelectedMeeting(selectedMeeting ? {
-                                ...selectedMeeting,
-                                insights: [...selectedMeeting.insights, newInsight]
-                            } : null);
-                        }}
+                        // onInsightSelect={setSelectedInsight}
+                        meetingState={meetingState}
                     />
                 </div>
             </div>

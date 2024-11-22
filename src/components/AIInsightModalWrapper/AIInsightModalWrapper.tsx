@@ -40,7 +40,7 @@ export const AIInsightModalWrapper: React.FC<AIInsightModalWrapperProps> = ({
                             return {
                                 ...insight,
                                 chatThread: [
-                                    ...insight.chatThread,
+                                    // ...insight.chatThread,
                                     {
                                         id: Date.now().toString(),
                                         sender: 'User',

@@ -104,7 +104,7 @@ export const TranscriptView = ({
             newSocket.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    
+                    console.log('Received message:', data);
                     if (data.meeting_id === meeting?.id) {
                         const currentAgendaId = meeting.agendaItems[currentAgendaIndexRef.current]?.id || '';
                         const newTranscript: TranscriptItem = {

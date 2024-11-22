@@ -41,9 +41,7 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
         const response = await axios.request(config);
         const isValidMeetingPlatform = meeting.link?.toLowerCase().includes('teams') ||
             meeting.link?.toLowerCase().includes('zoom');
-        console.log(isValidMeetingPlatform);
         if (response.data === '' && isValidMeetingPlatform) {
-            console.log('setting join disabled to false');
             setJoinDisabled(false);
         }
     }

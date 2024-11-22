@@ -76,7 +76,7 @@ export const MeetingsAndKanbanView = () => {
                 //     title: item[1],
                 // })) : [],
                 // insights: meeting[9] ? meeting[9] : [],
-                meetingType: meeting.type,
+                meetingType: meeting.meeting_type,
             }
         })
         console.log(formattedMeetings)

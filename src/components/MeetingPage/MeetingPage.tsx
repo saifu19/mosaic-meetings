@@ -8,7 +8,7 @@ import { QRCodeModal } from '@/components/QRCodeModal/QRCodeModal';
 import useMeetingTimer from '@/hooks/useMeetingTimer';
 import { useModalStates } from '@/hooks/useModalStates';
 import { useMeetingActions } from '@/hooks/useMeetingActions';
-import { AgendaItem, Meeting, TranscriptItem } from '@/types';
+import { AgendaItem, AIInsight, Meeting, TranscriptItem } from '@/types';
 import axios from 'axios';
 import { useMeeting } from '@/components/MeetingContext/MeetingContext';
 import { config as cfg } from '@/config/env';
@@ -52,9 +52,17 @@ export const MeetingPage = () => {
                     timestamp: item.timestamp ? item.timestamp : null,
                     agenda: item.agenda ? item.agenda : null,
                 })),
-                insights: [],
+                insights: response.data.transcript_insights.map((item: Partial<AIInsight>) => ({
+                    id: item.id ? item.id : null,
+                    insight_type: item.insight_type ? item.insight_type : null,
+                    insight: item.insight ? item.insight : null,
+                    created_at: item.created_at ? new Date(item.created_at).toLocaleString() : null,
+                    agenda: item.agenda ? item.agenda : null,
+                    start_transcript: item.start_transcript ? item.start_transcript : null,
+                    end_transcript: item.end_transcript ? item.end_transcript : null,
+                })),
                 participants: [],
-                meetingType: response.data.meeting.type,
+                meetingType: response.data.meeting.meeting_type,
             }
             return targetMeeting;
         } catch (error) {
