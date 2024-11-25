@@ -5,6 +5,7 @@ import { TranscriptItem, AIInsight, Meeting, MeetingState } from '@/types';
 // import { io, Socket } from 'socket.io-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { config as cfg } from '@/config/env';
+import { cn } from '@/lib/utils';
 
 interface TranscriptViewProps {
     meeting: Meeting | null;
@@ -12,6 +13,7 @@ interface TranscriptViewProps {
     onInsightClick: (insight: AIInsight) => void;
     meetingState: MeetingState;
     transcriptItems: any[];
+    highlightRanges: { start: string; end: string }[];
 }
 
 export const TranscriptView = ({
@@ -19,12 +21,45 @@ export const TranscriptView = ({
     currentAgendaItemIndex,
     // onInsightClick,
     meetingState,
-    transcriptItems
+    transcriptItems,
+    highlightRanges
 }: TranscriptViewProps) => {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [localTranscriptItems, setLocalTranscriptItems] = useState<TranscriptItem[]>([]);
+    const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const lastScrollTop = useRef<number>(0);
 
     const currentAgendaIndexRef = useRef(currentAgendaItemIndex);
+
+    const isMessageHighlighted = (messageId: string) => {
+        return highlightRanges.some(range => {
+            const startId = parseInt(range.start);
+            const endId = parseInt(range.end);
+            const currentId = parseInt(messageId);
+            return currentId >= startId && currentId <= endId;
+        });
+    };
+
+    const handleScroll = () => {
+        const element = contentRef.current;
+        if (!element) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = element;
+        const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
+
+        // If user has scrolled up
+        if (scrollTop < lastScrollTop.current) {
+            setShouldAutoScroll(false);
+        }
+
+        // If user has scrolled to bottom
+        if (isAtBottom) {
+            setShouldAutoScroll(true);
+        }
+
+        lastScrollTop.current = scrollTop;
+    };
 
     const allTranscriptItems = useMemo(() => {
         const meetingTranscripts = transcriptItems.map((item) => {
@@ -46,10 +81,19 @@ export const TranscriptView = ({
         return agendaItemId;
     }, [meeting, currentAgendaItemIndex]);
 
+    // Auto scroll to bottom of transcript
+    useEffect(() => {
+        if (shouldAutoScroll && contentRef.current) {
+            contentRef.current.scrollTop = contentRef.current.scrollHeight;
+        }
+    }, [allTranscriptItems]);
+
+    // Update current agenda item index ref
     useEffect(() => {
         currentAgendaIndexRef.current = currentAgendaItemIndex;
     }, [currentAgendaItemIndex]);
 
+    // Handle WebSocket connection
     useEffect(() => {
         if (!meeting?.id || !meeting.isJoined || meetingState.status !== 'in_progress') {
             if (socket) {
@@ -59,39 +103,39 @@ export const TranscriptView = ({
             }
             return;
         }
-    
+
         let reconnectAttempts = 0;
         const MAX_RECONNECT_ATTEMPTS = 5;
         const RECONNECT_DELAY = 2000;
-    
+
         function connect() {
             if (!meeting?.isJoined || meetingState.status !== 'in_progress') {
                 return null;
             }
 
             console.log('Initializing WebSocket connection for meeting:', meeting?.id);
-            
+
             // Use secure WebSocket protocol and the correct port
             const wsUrl = `${cfg.wsUrl}/ws/transcription/?meeting_id=${meeting?.id}`;
             console.log('Connecting to:', wsUrl);
-            
+
             const newSocket = new WebSocket(wsUrl);
-    
+
             newSocket.onopen = () => {
                 console.log('WebSocket Connected ✅');
                 reconnectAttempts = 0;
                 setSocket(newSocket);
             };
-    
+
             newSocket.onerror = (error) => {
                 console.error('WebSocket Connection Error ❌:', error);
                 // Don't set socket to null here, wait for onclose
             };
-    
+
             newSocket.onclose = (event) => {
                 console.log('WebSocket Disconnected ⚠️:', event.reason);
                 setSocket(null);
-    
+
                 if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                     reconnectAttempts++;
                     console.log(`Attempting to reconnect... (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
@@ -100,7 +144,7 @@ export const TranscriptView = ({
                     console.log('Max reconnection attempts reached');
                 }
             };
-    
+
             newSocket.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
@@ -108,7 +152,7 @@ export const TranscriptView = ({
                     if (data.meeting_id === meeting?.id) {
                         const currentAgendaId = meeting.agendaItems[currentAgendaIndexRef.current]?.id || '';
                         const newTranscript: TranscriptItem = {
-                            id: Date.now().toString(),
+                            id: data.id,
                             speaker: ['John', 'Alice', 'Bob', 'Sarah'][Math.floor(Math.random() * 4)],
                             message: data.text,
                             timestamp: new Date().toLocaleTimeString(),
@@ -120,12 +164,12 @@ export const TranscriptView = ({
                     console.error('Error processing message:', error);
                 }
             };
-    
+
             return newSocket;
         }
-    
+
         const newSocket = connect();
-    
+
         return () => {
             console.log('Cleaning up WebSocket connection');
             if (newSocket) {
@@ -142,12 +186,19 @@ export const TranscriptView = ({
                 <CardHeader>
                     <CardTitle>Meeting Transcript</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-grow overflow-y-auto">
+                <CardContent className="flex-grow overflow-y-auto" ref={contentRef} onScroll={handleScroll}>
                     <div className="space-y-4">
                         {allTranscriptItems
                             .filter(item => item.agenda === currentAgendaItemId)
                             .map((item) => (
-                                <div key={item.id} className="p-4 bg-white rounded-lg shadow">
+                                <div key={item.id}
+                                    className={cn(
+                                        "p-4 rounded-lg shadow transition-colors duration-200",
+                                        isMessageHighlighted(item.id)
+                                            ? "bg-yellow-50 border-yellow-200 border"
+                                            : "bg-white"
+                                    )}
+                                >
                                     <div className="flex items-center justify-between">
                                         <span className="font-bold">{item.speaker}</span>
                                         <span className="text-sm text-gray-500">{item.timestamp}</span>

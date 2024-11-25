@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AgendaTimeline } from '@/components/AgendaTimeline/AgendaTimeline';
 import { TranscriptView } from '@/components/TranscriptView/TranscriptView';
@@ -23,6 +23,10 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
     setSelectedInsight,
     setSelectedMeeting,
 }) => {
+    const [visibleInsightRanges, setVisibleInsightRanges] = useState<{
+        start: string;
+        end: string;
+    }[]>([]);
     return (
         <div className="flex-1 flex flex-col overflow-hidden">
             {meetingState.error && (
@@ -71,6 +75,7 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                     onInsightClick={setSelectedInsight}
                     meetingState={meetingState}
                     transcriptItems={selectedMeeting?.transcriptItems || []}
+                    highlightRanges={visibleInsightRanges}
                 />
 
                 {/* AI Insights */}
@@ -80,6 +85,7 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                         currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
                         // onInsightSelect={setSelectedInsight}
                         meetingState={meetingState}
+                        onVisibleRangesChange={setVisibleInsightRanges}
                     />
                 </div>
             </div>
