@@ -27,6 +27,9 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
         start: string;
         end: string;
     }[]>([]);
+
+    const [isInsightsPanelFullScreen, setIsInsightsPanelFullScreen] = useState(false);
+    const [isTranscriptFullScreen, setIsTranscriptFullScreen] = useState(false);
     return (
         <div className="flex-1 flex flex-col overflow-hidden">
             {meetingState.error && (
@@ -76,16 +79,20 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
                     meetingState={meetingState}
                     transcriptItems={selectedMeeting?.transcriptItems || []}
                     highlightRanges={visibleInsightRanges}
+                    isFullScreen={isTranscriptFullScreen}
+                    onToggleFullScreen={() => setIsTranscriptFullScreen(!isTranscriptFullScreen)}
                 />
 
                 {/* AI Insights */}
-                <div className="w-1/2 overflow-hidden flex flex-col">
+                <div className={`overflow-hidden flex flex-col`}>
                     <InsightsPanel
                         meeting={selectedMeeting}
                         currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
                         // onInsightSelect={setSelectedInsight}
                         meetingState={meetingState}
                         onVisibleRangesChange={setVisibleInsightRanges}
+                        isFullScreen={isInsightsPanelFullScreen}
+                        onToggleFullScreen={() => setIsInsightsPanelFullScreen(!isInsightsPanelFullScreen)}
                     />
                 </div>
             </div>

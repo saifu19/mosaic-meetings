@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TranscriptItem, AIInsight, Meeting, MeetingState } from '@/types';
-// import { Brain } from 'lucide-react';
-// Remove these imports
-// import { io, Socket } from 'socket.io-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { config as cfg } from '@/config/env';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 interface TranscriptViewProps {
     meeting: Meeting | null;
@@ -14,6 +13,8 @@ interface TranscriptViewProps {
     meetingState: MeetingState;
     transcriptItems: any[];
     highlightRanges: { start: string; end: string }[];
+    isFullScreen: boolean;
+    onToggleFullScreen: () => void;
 }
 
 export const TranscriptView = ({
@@ -22,7 +23,9 @@ export const TranscriptView = ({
     // onInsightClick,
     meetingState,
     transcriptItems,
-    highlightRanges
+    highlightRanges,
+    isFullScreen,
+    onToggleFullScreen
 }: TranscriptViewProps) => {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [localTranscriptItems, setLocalTranscriptItems] = useState<TranscriptItem[]>([]);
@@ -180,14 +183,24 @@ export const TranscriptView = ({
         };
     }, [meeting?.id, meeting?.isJoined, meetingState.status]);
 
-    return (
-        <div className="w-1/2 overflow-hidden flex flex-col">
-            <Card className="h-full flex flex-col">
-                <CardHeader>
-                    <CardTitle>Meeting Transcript</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow overflow-y-auto" ref={contentRef} onScroll={handleScroll}>
-                    <div className="space-y-4">
+    if (isFullScreen) {
+        return (
+            <div className="fixed inset-0 bg-white z-50 flex flex-col">
+                <div className="p-4 border-b">
+                    <div className="flex justify-between items-center max-w-[2000px] mx-auto w-full">
+                        <CardTitle>Meeting Transcript</CardTitle>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onToggleFullScreen}
+                            className="hover:bg-gray-100"
+                        >
+                            <Minimize2 className="h-5 w-5" />
+                        </Button>
+                    </div>
+                </div>
+                <div className="flex-grow overflow-y-auto p-4" ref={contentRef} onScroll={handleScroll}>
+                    <div className="max-w-[2000px] mx-auto space-y-4">
                         {allTranscriptItems
                             .filter(item => item.agenda === currentAgendaItemId)
                             .map((item) => (
@@ -200,7 +213,7 @@ export const TranscriptView = ({
                                     )}
                                 >
                                     <div className="flex items-center justify-between">
-                                        <span className="font-bold">{item.speaker}</span>
+                                        {/* <span className="font-bold">{item.speaker}</span> */}
                                         <span className="text-sm text-gray-500">{item.timestamp}</span>
                                     </div>
                                     <p className="mt-2">{item.message}</p>
@@ -216,8 +229,57 @@ export const TranscriptView = ({
                                 </div>
                             ))}
                     </div>
-                </CardContent>
-            </Card>
-        </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <Card className="h-full flex flex-col">
+            <CardHeader>
+                <div className="flex justify-between items-center">
+                    <CardTitle>Meeting Transcript</CardTitle>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onToggleFullScreen}
+                        className="hover:bg-gray-100"
+                    >
+                        <Maximize2 className="h-5 w-5" />
+                    </Button>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow overflow-y-auto" ref={contentRef} onScroll={handleScroll}>
+                <div className="space-y-4">
+                    {allTranscriptItems
+                        .filter(item => item.agenda === currentAgendaItemId)
+                        .map((item) => (
+                            <div key={item.id}
+                                className={cn(
+                                    "p-4 rounded-lg shadow transition-colors duration-200",
+                                    isMessageHighlighted(item.id)
+                                        ? "bg-yellow-50 border-yellow-200 border"
+                                        : "bg-white"
+                                )}
+                            >
+                                <div className="flex items-center justify-between">
+                                    {/* <span className="font-bold">{item.speaker}</span> */}
+                                    <span className="text-sm text-gray-500">{item.timestamp}</span>
+                                </div>
+                                <p className="mt-2">{item.message}</p>
+                                {/* {item.aiInsight && (
+                                        <div
+                                            className="mt-2 p-2 bg-purple-50 rounded flex items-center space-x-2 cursor-pointer hover:bg-purple-100"
+                                            onClick={() => onInsightClick(item.aiInsight!)}
+                                        >
+                                            <Brain className="h-4 w-4 text-purple-500" />
+                                            <span className="text-sm text-purple-700">AI Insight Available</span>
+                                        </div>
+                                    )} */}
+                            </div>
+                        ))}
+                </div>
+            </CardContent>
+        </Card>
     );
 };

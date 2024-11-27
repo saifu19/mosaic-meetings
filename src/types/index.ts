@@ -76,3 +76,16 @@ export interface KanbanColumn {
 	title: string;
 	items: { id: string; content: string }[];
 }
+
+export interface GroupedInsights {
+    requirements: AIInsight[];
+    context: AIInsight[];
+    action_items: AIInsight[];
+    summary: AIInsight[];
+}
+
+export interface TranscriptRange {
+    start: string;
+    end: string;
+    insights: GroupedInsights;
+}
