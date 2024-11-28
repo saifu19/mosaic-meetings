@@ -7,17 +7,19 @@ interface InsightTabsProps {
     transcriptRanges: TranscriptRange[];
     onObserve: (element: HTMLDivElement) => void;
     onUnobserve: (element: HTMLDivElement) => void;
+    agents: Array<{id: number, name: string, order: number}>;
 }
 
-export const InsightTabs = React.memo(({ transcriptRanges, onObserve, onUnobserve }: InsightTabsProps) => {
+export const InsightTabs = React.memo(({ transcriptRanges, onObserve, onUnobserve, agents }: InsightTabsProps) => {
     return (
         <Tabs defaultValue="all">
             <TabsList>
                 <TabsTrigger value="all">All Insights</TabsTrigger>
-                <TabsTrigger value="requirements">Requirements</TabsTrigger>
-                <TabsTrigger value="context">Context</TabsTrigger>
-                <TabsTrigger value="action_items">Action Items</TabsTrigger>
-                <TabsTrigger value="summary">Summary</TabsTrigger>
+                {agents.map(agent => (
+                    <TabsTrigger key={agent.id} value={agent.name}>
+                        {agent.name.replace('_', ' ')}
+                    </TabsTrigger>
+                ))}
             </TabsList>
 
             <TabsContent value="all">
@@ -31,20 +33,16 @@ export const InsightTabs = React.memo(({ transcriptRanges, onObserve, onUnobserv
                 ))}
             </TabsContent>
 
-            {['requirements', 'context', 'action_items', 'summary'].map(type => (
-                <TabsContent key={type} value={type}>
+            {agents.map(agent => (
+                <TabsContent key={agent.id} value={agent.name}>
                     {transcriptRanges.map((range) => (
-                        range.insights[type as keyof typeof range.insights].length > 0 && (
+                        range.insights[agent.name]?.length > 0 && (
                             <RangeContainer 
-                                key={`${range.start}-${range.end}-${type}`}
+                                key={`${range.start}-${range.end}-${agent.name}`}
                                 range={{
                                     ...range,
                                     insights: {
-                                        requirements: [],
-                                        context: [],
-                                        action_items: [],
-                                        summary: [],
-                                        [type]: range.insights[type as keyof typeof range.insights]
+                                        [agent.name]: range.insights[agent.name] || []
                                     }
                                 }}
                                 onObserve={onObserve}

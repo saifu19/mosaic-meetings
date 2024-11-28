@@ -72,19 +72,21 @@ export const MeetingContent: React.FC<MeetingContentProps> = ({
             {/* Meeting Content */}
             <div className="flex-1 flex space-x-4 overflow-hidden p-4">
                 {/* Transcript */}
-                <TranscriptView
-                    meeting={selectedMeeting}
-                    currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
-                    onInsightClick={setSelectedInsight}
-                    meetingState={meetingState}
-                    transcriptItems={selectedMeeting?.transcriptItems || []}
-                    highlightRanges={visibleInsightRanges}
-                    isFullScreen={isTranscriptFullScreen}
-                    onToggleFullScreen={() => setIsTranscriptFullScreen(!isTranscriptFullScreen)}
-                />
+                <div className={`w-1/2 overflow-hidden flex flex-col`}>
+                    <TranscriptView
+                        meeting={selectedMeeting}
+                        currentAgendaItemIndex={meetingState.currentAgendaItemIndex}
+                        onInsightClick={setSelectedInsight}
+                        meetingState={meetingState}
+                        transcriptItems={selectedMeeting?.transcriptItems || []}
+                        highlightRanges={visibleInsightRanges}
+                        isFullScreen={isTranscriptFullScreen}
+                        onToggleFullScreen={() => setIsTranscriptFullScreen(!isTranscriptFullScreen)}
+                    />
+                </div>
 
                 {/* AI Insights */}
-                <div className={`overflow-hidden flex flex-col`}>
+                <div className="w-1/2 overflow-hidden flex flex-col">
                     <InsightsPanel
                         meeting={selectedMeeting}
                         currentAgendaItemIndex={meetingState.currentAgendaItemIndex}

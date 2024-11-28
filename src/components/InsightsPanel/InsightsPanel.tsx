@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
-import { AIInsight, Meeting, MeetingState, TranscriptRange, InsightType } from '@/types';
+import { AIInsight, Meeting, MeetingState, TranscriptRange } from '@/types';
 import {
 	Card,
 	CardTitle,
@@ -12,6 +12,7 @@ import { InsightTabs } from '@/components/InsightTabs/InsightTabs';
 import { formatInsightContent } from '@/utils/insightFormatters';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import axios from 'axios';
 
 interface InsightsPanelProps {
 	meeting: Meeting | null;
@@ -20,7 +21,7 @@ interface InsightsPanelProps {
 	meetingState: MeetingState;
 	onVisibleRangesChange: (ranges: { start: string; end: string }[]) => void;
 	isFullScreen: boolean;
-    onToggleFullScreen: () => void;
+	onToggleFullScreen: () => void;
 }
 
 export const InsightsPanel = ({
@@ -41,8 +42,7 @@ export const InsightsPanel = ({
 	const lastScrollTop = useRef<number>(0);
 	const currentAgendaIndexRef = useRef(currentAgendaItemIndex);
 	const observerRef = useRef<IntersectionObserver | null>(null);
-	const insightTypes: InsightType[] = ['action_items', 'requirements', 'context', 'summary'];
-
+	const [meetingAgents, setMeetingAgents] = useState<Array<{ id: number, name: string, order: number }>>([]);
 
 	const handleScroll = () => {
 		const element = contentRef.current;
@@ -79,7 +79,7 @@ export const InsightsPanel = ({
 					const newInsight: AIInsight = {
 						id: data.ids[index].toString(),
 						insight: analysisItem,
-						insight_type: insightTypes[index],
+						insight_type: meetingAgents[index].name,
 						created_at: data.timestamp,
 						agenda: data.agenda_id,
 						start_transcript: data.start_transcript,
@@ -99,31 +99,45 @@ export const InsightsPanel = ({
 
 	const groupInsightsByTranscriptRange = useCallback((insights: AIInsight[]) => {
 		const ranges: { [key: string]: TranscriptRange } = {};
-
-		console.log('Grouping insights for current agenda item:', insights.length);
-
+	
 		insights.forEach(insight => {
 			const key = `${insight.start_transcript}-${insight.end_transcript}`;
-
+	
 			if (!ranges[key]) {
 				ranges[key] = {
 					start: insight.start_transcript,
 					end: insight.end_transcript,
-
-					insights: {
-						requirements: [],
-						context: [],
-						action_items: [],
-						summary: []
-					}
+					insights: {}
 				};
 			}
-
+	
+			// Initialize array for this insight type if it doesn't exist
+			if (!ranges[key].insights[insight.insight_type]) {
+				ranges[key].insights[insight.insight_type] = [];
+			}
+	
 			ranges[key].insights[insight.insight_type].push(insight);
 		});
-
+	
 		return Object.values(ranges);
 	}, []);
+
+	// Fetch meeting agents
+	useEffect(() => {
+		const fetchMeetingAgents = async () => {
+			if (!meeting?.id) return;
+
+			try {
+				const response = await axios.get(`${cfg.apiUrl}/api/get-agents-for-meeting?meeting_id=${meeting.id}`);
+				const sortedAgents = response.data.sort((a: any, b: any) => a.order - b.order);
+				setMeetingAgents(sortedAgents);
+			} catch (error) {
+				console.error('Error fetching meeting agents:', error);
+			}
+		};
+
+		fetchMeetingAgents();
+	}, [meeting?.id]);
 
 	// Auto scroll to bottom of insights panel
 	useEffect(() => {
@@ -292,7 +306,7 @@ export const InsightsPanel = ({
 				setFormattedInsights(prev => {
 					const newMap = new Map(prev);
 					batch.forEach(insight => {
-						newMap.set(insight.id, formatInsightContent(insight));
+						newMap.set(insight.id, formatInsightContent(insight.insight));
 					});
 					return newMap;
 				});
@@ -335,66 +349,68 @@ export const InsightsPanel = ({
 	}, []);
 
 	if (isFullScreen) {
-        return (
-            <div className="fixed inset-0 bg-white z-50 flex flex-col">
-                <div className="p-4 border-b">
-                    <div className="flex justify-between items-center max-w-[2000px] mx-auto w-full">
-                        <CardTitle>AI Insights</CardTitle>
-                        <div className="flex items-center gap-4">
-                            <div className="text-sm text-gray-500">
-                                Total Insights: {currentInsights.length}
-                            </div>
-                            <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={onToggleFullScreen}
-                                className="hover:bg-gray-100"
-                            >
-                                <Minimize2 className="h-5 w-5" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex-grow overflow-y-auto p-4" ref={contentRef} onScroll={handleScroll}>
-                    <div className="max-w-[2000px] mx-auto">
-                        <InsightTabs
-                            transcriptRanges={transcriptRanges}
-                            onObserve={handleObserve}
-                            onUnobserve={handleUnobserve}
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    }
+		return (
+			<div className="fixed inset-0 bg-white z-50 flex flex-col">
+				<div className="p-4 border-b">
+					<div className="flex justify-between items-center max-w-[2000px] mx-auto w-full">
+						<CardTitle>AI Insights</CardTitle>
+						<div className="flex items-center gap-4">
+							<div className="text-sm text-gray-500">
+								Total Insights: {currentInsights.length}
+							</div>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={onToggleFullScreen}
+								className="hover:bg-gray-100"
+							>
+								<Minimize2 className="h-5 w-5" />
+							</Button>
+						</div>
+					</div>
+				</div>
+				<div className="flex-grow overflow-y-auto p-4" ref={contentRef} onScroll={handleScroll}>
+					<div className="max-w-[2000px] mx-auto">
+						<InsightTabs
+							transcriptRanges={transcriptRanges}
+							onObserve={handleObserve}
+							onUnobserve={handleUnobserve}
+							agents={meetingAgents}
+						/>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
-    return (
-        <Card className="h-full flex flex-col">
-            <CardHeader>
-                <div className="flex justify-between items-center">
-                    <CardTitle>AI Insights</CardTitle>
-                    <div className="flex items-center gap-4">
-                        <div className="text-sm text-gray-500">
-                            Total Insights: {currentInsights.length}
-                        </div>
-                        <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={onToggleFullScreen}
-                            className="hover:bg-gray-100"
-                        >
-                            <Maximize2 className="h-5 w-5" />
-                        </Button>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent className="flex-grow overflow-y-auto" ref={contentRef} onScroll={handleScroll}>
-                <InsightTabs
-                    transcriptRanges={transcriptRanges}
-                    onObserve={handleObserve}
-                    onUnobserve={handleUnobserve}
-                />
-            </CardContent>
-        </Card>
-    );
+	return (
+		<Card className="h-full flex flex-col">
+			<CardHeader>
+				<div className="flex justify-between items-center">
+					<CardTitle>AI Insights</CardTitle>
+					<div className="flex items-center gap-4">
+						<div className="text-sm text-gray-500">
+							Total Insights: {currentInsights.length}
+						</div>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={onToggleFullScreen}
+							className="hover:bg-gray-100"
+						>
+							<Maximize2 className="h-5 w-5" />
+						</Button>
+					</div>
+				</div>
+			</CardHeader>
+			<CardContent className="flex-grow overflow-y-auto" ref={contentRef} onScroll={handleScroll}>
+				<InsightTabs
+					transcriptRanges={transcriptRanges}
+					onObserve={handleObserve}
+					onUnobserve={handleUnobserve}
+					agents={meetingAgents}
+				/>
+			</CardContent>
+		</Card>
+	);
 };

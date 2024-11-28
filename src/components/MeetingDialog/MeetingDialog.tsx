@@ -72,7 +72,7 @@ export const MeetingDialog = ({
         const response = await axios.get(`${cfg.apiUrl}/api/get-meeting-types`);
         const meetingTypes: MeetingType[] = response.data.map((type: any) => ({
             key: type.id,
-            title: type.name,
+            name: type.name,
         }));
         setMeetingTypes(meetingTypes);
     }
@@ -245,13 +245,13 @@ export const MeetingDialog = ({
                         >
                             <SelectTrigger>
                                 <SelectValue>
-                                    {meetingTypes.find(type => type.key === formData.meetingType)?.title || "Select meeting type"}
+                                    {meetingTypes.find(type => type.key === formData.meetingType)?.name || "Select meeting type"}
                                 </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 {meetingTypes.map((type: MeetingType) => (
                                     <SelectItem key={type.key} value={type.key}>
-                                        {type.title}
+                                        {type.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>

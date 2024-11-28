@@ -6,6 +6,7 @@ export const useModalStates = () => {
     const [showAddMeetingDialog, setShowAddMeetingDialog] = useState(false);
     const [showCreateMeetingTypeDialog, setShowCreateMeetingTypeDialog] = useState(false);
     const [selectedInsight, setSelectedInsight] = useState<AIInsight | null>(null);
+    const [addAgentOpen, setAddAgentOpen] = useState(false);
 
     return {
         qrCode: {
@@ -27,6 +28,11 @@ export const useModalStates = () => {
             selected: selectedInsight,
             select: setSelectedInsight,
             close: () => setSelectedInsight(null),
+        },
+        addAgent: {
+            isOpen: addAgentOpen,
+            open: () => setAddAgentOpen(true),
+            close: () => setAddAgentOpen(false),
         },
     };
 }; 

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Plus, Settings } from 'lucide-react';
+import { Plus, Settings, Users } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { KanbanBoard } from '@/components/KanbanBoard/KanbanBoard';
 import { Meeting, KanbanColumn } from '@/types';
 import { MeetingDialog } from '@/components/MeetingDialog/MeetingDialog';
-import { CreateMeetingTypeDialog } from '@/components/CreateMeetingTypeDialog/CreateMeetingTypeDialog';
 import { useModalStates } from '@/hooks/useModalStates';
 import axios from 'axios';
 import { initialKanbanColumns } from '@/data/mockData';
@@ -19,7 +19,7 @@ export const MeetingsAndKanbanView = () => {
     const [selectedMeeting, setSelectedMeeting] = useState<Partial<Meeting> | undefined>(undefined);
     const [editMode, setEditMode] = useState(false);
     const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>(initialKanbanColumns);
-
+    const navigate = useNavigate();
     const onEditMeetingClick = (meeting: Partial<Meeting>) => {
         setSelectedMeeting(meeting);
         setEditMode(true);
@@ -102,10 +102,17 @@ export const MeetingsAndKanbanView = () => {
                     </Button>
                     <Button
                         variant="outline"
-                        onClick={modals.createMeetingType.open}
+                        onClick={() => navigate('/agents')}
+                    >
+                        <Users className="mr-2 h-4 w-4" />
+                        Agents Crud
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => navigate('/meeting-types')}
                     >
                         <Settings className="mr-2 h-4 w-4" />
-                        Create Meeting Type
+                        Meeting Types Crud
                     </Button>
                 </div>
             </div>
@@ -147,11 +154,6 @@ export const MeetingsAndKanbanView = () => {
                 onMeetingUpdated={() => setRefreshTrigger(prev => prev + 1)}
                 mode={editMode ? 'edit' : 'add'}
                 initialData={selectedMeeting}
-            />
-
-            <CreateMeetingTypeDialog
-                isOpen={modals.createMeetingType.isOpen}
-                onClose={modals.createMeetingType.close}
             />
         </div>
     );

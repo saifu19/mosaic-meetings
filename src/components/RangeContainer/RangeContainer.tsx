@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { AIInsight, InsightType, TranscriptRange } from '@/types';
+import { AIInsight, TranscriptRange } from '@/types';
 import { InsightCard } from '@/components/InsightCard/InsightCard';
 import { formatInsightContent } from '@/utils/insightFormatters';
 
@@ -41,7 +41,7 @@ export const RangeContainer = React.memo(({ range, onObserve, onUnobserve }: Ran
                 Transcript Range: {range.start} - {range.end}
             </div>
             {Object.entries(range.insights).map(([type, insights]) => (
-                insights.length > 0 && (
+                insights && insights.length > 0 && (
                     <div key={type} className="insight-group">
                         <h3 className="font-semibold mb-2 capitalize">
                             {type.replace('_', ' ')}
@@ -51,8 +51,8 @@ export const RangeContainer = React.memo(({ range, onObserve, onUnobserve }: Ran
                                 <InsightCard
                                     key={insight.id}
                                     insight={insight}
-                                    type={type as InsightType}
-                                    formattedContent={formatInsightContent(insight)}
+                                    type={type}
+                                    formattedContent={formatInsightContent(insight.insight)}
                                     onRef={handleCardRef}
                                     rangeStart={range.start}
                                     rangeEnd={range.end}

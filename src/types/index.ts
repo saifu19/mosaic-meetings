@@ -1,11 +1,13 @@
 // Meeting Types
 export type MeetingStatus = 'not_started' | 'in_progress' | 'ended';
-export type InsightType = 'requirements' | 'context' | 'action_items' | 'summary';
+export type InsightType = string;
 export interface MeetingType {
-    key: string;
-    title: string;
-    description: string;
-    defaultAgendaItems: AgendaItem[];
+	key: string;
+	id: number;
+	name: string;
+	description: string;
+	defaultAgendaItems: AgendaItem[];
+	agents?: Array<Agent & { order: number }>;
 }
 
 // State Interfaces
@@ -78,14 +80,26 @@ export interface KanbanColumn {
 }
 
 export interface GroupedInsights {
-    requirements: AIInsight[];
-    context: AIInsight[];
-    action_items: AIInsight[];
-    summary: AIInsight[];
+	requirements: AIInsight[];
+	context: AIInsight[];
+	action_items: AIInsight[];
+	summary: AIInsight[];
 }
 
 export interface TranscriptRange {
-    start: string;
-    end: string;
-    insights: GroupedInsights;
+	start: string;
+	end: string;
+	insights: {
+        [key: string]: AIInsight[];
+    };
+}
+
+export interface Agent {
+	id: string;
+	name: string;
+	description: string;
+	system_prompt: string;
+	human_prompt: string;
+	created_at?: string;
+	updated_at?: string;
 }

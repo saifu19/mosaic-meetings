@@ -1,13 +1,13 @@
 import React from 'react';
-import { AIInsight, InsightType } from '@/types';
+import { AIInsight } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { getInsightIcon, getInsightColor } from '@/utils/insightFormatters';
 
 interface InsightCardProps {
     insight: AIInsight;
-    type: InsightType;
-    formattedContent: React.ReactNode;
+    type: string;
+    formattedContent: string;
     onRef?: (element: HTMLDivElement | null) => void;
     rangeStart?: string;
     rangeEnd?: string;
@@ -38,7 +38,12 @@ export const InsightCard = React.memo(({
                 </div>
             </CardHeader>
             <CardContent>
-                {formattedContent || (
+                {formattedContent ? (
+                    <div 
+                        className="prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: formattedContent }}
+                    />
+                ) : (
                     <div className="animate-pulse">
                         <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                         <div className="h-4 bg-gray-200 rounded w-1/2"></div>
