@@ -44,7 +44,7 @@ export const RangeContainer = React.memo(({ range, onObserve, onUnobserve }: Ran
                 insights && insights.length > 0 && (
                     <div key={type} className="insight-group">
                         <h3 className="font-semibold mb-2 capitalize">
-                            {type.replace('_', ' ')}
+                            {type.replace('_', ' ').toUpperCase()}
                         </h3>
                         <div className="insight-cards">
                             {insights.map((insight: AIInsight) => (

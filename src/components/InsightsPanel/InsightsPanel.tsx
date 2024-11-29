@@ -69,33 +69,6 @@ export const InsightsPanel = ({
 		});
 	}, []);
 
-	const handleWebSocketMessage = useCallback((event: MessageEvent) => {
-		try {
-			const data = (JSON.parse(event.data)).data;
-			if (data.meeting_id === meeting?.id) {
-				const currentAgendaId = meeting?.agendaItems[currentAgendaIndexRef.current]?.id;
-
-				data.analysis.forEach((analysisItem: any, index: number) => {
-					const newInsight: AIInsight = {
-						id: data.ids[index].toString(),
-						insight: analysisItem,
-						insight_type: meetingAgents[index].name,
-						created_at: data.timestamp,
-						agenda: data.agenda_id,
-						start_transcript: data.start_transcript,
-						end_transcript: data.end_transcript
-					};
-
-					if (newInsight.agenda === currentAgendaId) {
-						console.log('Adding new insight to state:', newInsight);
-						onNewInsight(newInsight);
-					}
-				});
-			}
-		} catch (error) {
-			console.error('Error processing message:', error);
-		}
-	}, [currentAgendaIndexRef, onNewInsight]);
 
 	const groupInsightsByTranscriptRange = useCallback((insights: AIInsight[]) => {
 		const ranges: { [key: string]: TranscriptRange } = {};
@@ -131,6 +104,7 @@ export const InsightsPanel = ({
 				const response = await axios.get(`${cfg.apiUrl}/api/get-agents-for-meeting?meeting_id=${meeting.id}`);
 				const sortedAgents = response.data.sort((a: any, b: any) => a.order - b.order);
 				setMeetingAgents(sortedAgents);
+				console.log('Meeting agents:', sortedAgents);
 			} catch (error) {
 				console.error('Error fetching meeting agents:', error);
 			}
@@ -139,6 +113,34 @@ export const InsightsPanel = ({
 		fetchMeetingAgents();
 	}, [meeting?.id]);
 
+	const handleWebSocketMessage = useCallback((event: MessageEvent) => {
+		try {
+			const data = (JSON.parse(event.data)).data;
+			if (data.meeting_id === meeting?.id) {
+				const currentAgendaId = meeting?.agendaItems[currentAgendaIndexRef.current]?.id;
+
+				data.analysis.forEach((analysisItem: any, index: number) => {
+					const newInsight: AIInsight = {
+						id: data.ids[index].toString(),
+						insight: analysisItem,
+						insight_type: meetingAgents[index].name,
+						created_at: data.timestamp,
+						agenda: data.agenda_id,
+						start_transcript: data.start_transcript,
+						end_transcript: data.end_transcript
+					};
+
+					if (newInsight.agenda === currentAgendaId) {
+						console.log('Adding new insight to state:', newInsight);
+						onNewInsight(newInsight);
+					}
+				});
+			}
+		} catch (error) {
+			console.error('Error processing message:', error);
+		}
+	}, [currentAgendaIndexRef, onNewInsight]);
+	
 	// Auto scroll to bottom of insights panel
 	useEffect(() => {
 		if (shouldAutoScroll && contentRef.current) {
