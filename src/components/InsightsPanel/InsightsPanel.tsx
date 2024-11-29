@@ -119,7 +119,12 @@ export const InsightsPanel = ({
 			if (data.meeting_id === meeting?.id) {
 				const currentAgendaId = meeting?.agendaItems[currentAgendaIndexRef.current]?.id;
 
+				console.log(data.analysis);
+
 				data.analysis.forEach((analysisItem: any, index: number) => {
+					console.log(index);
+					console.log(meetingAgents);
+					console.log(meetingAgents[index]);
 					const newInsight: AIInsight = {
 						id: data.ids[index].toString(),
 						insight: analysisItem,
@@ -139,7 +144,7 @@ export const InsightsPanel = ({
 		} catch (error) {
 			console.error('Error processing message:', error);
 		}
-	}, [currentAgendaIndexRef, onNewInsight]);
+	}, [currentAgendaIndexRef, onNewInsight, meetingAgents]);
 	
 	// Auto scroll to bottom of insights panel
 	useEffect(() => {
