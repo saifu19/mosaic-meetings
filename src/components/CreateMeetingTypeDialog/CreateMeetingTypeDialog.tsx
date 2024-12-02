@@ -149,16 +149,16 @@ export const CreateMeetingTypeDialog = ({
                 );
         
                 const meetingTypeId = meetingTypeResponse.data.id;
-        
-                // Then create agent assignments
-                for (const agent of selectedAgents) {
-                    await axios.post(`${cfg.apiUrl}/api/create-meeting-type-agent`, {
-                        meeting_type: meetingTypeId,
-                        agent: agent.id,
-                        order: agent.order,
-                        is_active: true,
-                    });
+                
+                const data = {
+                    meeting_type: meetingTypeId,
+                    agent: selectedAgents.map((agent) => agent.id),
                 }
+
+                console.log(data);
+
+                // Then create agent assignments
+                await axios.post(`${cfg.apiUrl}/api/create-meeting-type-agents`, data);
             }
     
             onMeetingTypeUpdated();
