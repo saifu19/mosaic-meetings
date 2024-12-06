@@ -39,11 +39,13 @@ export const isValidJSON = (str: string): boolean => {
 export const formatInsightContent = (content: string): string => {
     try {
         // First unescape any escaped characters
-        const unescapedContent = content
-            .replace(/\\n/g, '\n')  // Replace \n with actual newlines
-            .replace(/\\"/g, '"')   // Replace \" with "
-            .replace(/\\/g, '');    // Remove any remaining backslashes
+        let unescapedContent = content
+            .replace(/\\n/g, '\n')
+            .replace(/\\"/g, '"')
+            .replace(/\\/g, '');
 
+        unescapedContent = unescapedContent.replace('u2019', "'");
+        unescapedContent = unescapedContent.startsWith('"') && unescapedContent.endsWith('"') ? unescapedContent.slice(1, -1) : unescapedContent;
         // Configure marked options
         marked.marked.setOptions({
             breaks: true,
