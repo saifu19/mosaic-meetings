@@ -27,11 +27,12 @@ export const InsightCard = React.memo(({
 }: InsightCardProps) => {
     const onInstantPresentation = async () => {
         try {
-            await fetch('https://httpdump.app/dumps/94a61c62-5220-4199-8a63-5759e008802b', {
+            const response = await fetch('https://www.mojomosaic.xyz/api/v1/create-subtopic-and-quick-ppt', {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': 'Bearer be086981-630f-4a1a-8c47-712a9e128e55'
                 },
                 body: JSON.stringify({
                     content: originalContent,
@@ -40,6 +41,7 @@ export const InsightCard = React.memo(({
                     timestamp: insight.created_at
                 })
             });
+            console.log(response);
         } catch (error) {
             console.error('Error sending presentation data:', error);
         }
