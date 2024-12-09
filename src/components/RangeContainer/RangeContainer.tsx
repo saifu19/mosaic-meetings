@@ -53,6 +53,7 @@ export const RangeContainer = React.memo(({ range, onObserve, onUnobserve }: Ran
                                     insight={insight}
                                     type={type}
                                     formattedContent={formatInsightContent(insight.insight)}
+                                    originalContent={insight.insight}
                                     onRef={handleCardRef}
                                     rangeStart={range.start}
                                     rangeEnd={range.end}
