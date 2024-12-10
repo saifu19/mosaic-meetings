@@ -1,16 +1,17 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
-import { TranscriptRange } from '@/types';
+import { Meeting, TranscriptRange } from '@/types';
 import { RangeContainer } from '@/components/RangeContainer/RangeContainer';
 
 interface InsightTabsProps {
+    meeting: Meeting | null;
     transcriptRanges: TranscriptRange[];
     onObserve: (element: HTMLDivElement) => void;
     onUnobserve: (element: HTMLDivElement) => void;
     agents: Array<{id: number, name: string, order: number}>;
 }
 
-export const InsightTabs = React.memo(({ transcriptRanges, onObserve, onUnobserve, agents }: InsightTabsProps) => {
+export const InsightTabs = React.memo(({ meeting, transcriptRanges, onObserve, onUnobserve, agents }: InsightTabsProps) => {
     return (
         <Tabs defaultValue="all">
             <TabsList>
@@ -25,6 +26,7 @@ export const InsightTabs = React.memo(({ transcriptRanges, onObserve, onUnobserv
             <TabsContent value="all">
                 {transcriptRanges.map((range) => (
                     <RangeContainer 
+                        meeting={meeting}
                         key={`${range.start}-${range.end}`} 
                         range={range}
                         onObserve={onObserve}
@@ -38,6 +40,7 @@ export const InsightTabs = React.memo(({ transcriptRanges, onObserve, onUnobserv
                     {transcriptRanges.map((range) => (
                         range.insights[agent.name]?.length > 0 && (
                             <RangeContainer 
+                                meeting={meeting}
                                 key={`${range.start}-${range.end}-${agent.name}`}
                                 range={{
                                     ...range,

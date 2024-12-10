@@ -32,6 +32,8 @@ export interface Meeting {
 	transcriptItems: TranscriptItem[];
 	insights: AIInsight[];
 	participants: Participant[];
+	ssa: string;
+	site_id: string;
 }
 
 export interface AgendaItem {

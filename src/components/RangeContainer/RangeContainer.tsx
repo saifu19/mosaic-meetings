@@ -1,15 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import { AIInsight, TranscriptRange } from '@/types';
+import { AIInsight, Meeting, TranscriptRange } from '@/types';
 import { InsightCard } from '@/components/InsightCard/InsightCard';
 import { formatInsightContent } from '@/utils/insightFormatters';
 
 interface RangeContainerProps {
+    meeting: Meeting | null;
     range: TranscriptRange;
     onObserve?: (element: HTMLDivElement) => void;
     onUnobserve?: (element: HTMLDivElement) => void;
 }
 
-export const RangeContainer = React.memo(({ range, onObserve, onUnobserve }: RangeContainerProps) => {
+export const RangeContainer = React.memo(({ meeting, range, onObserve, onUnobserve }: RangeContainerProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -49,6 +50,7 @@ export const RangeContainer = React.memo(({ range, onObserve, onUnobserve }: Ran
                         <div className="insight-cards">
                             {insights.map((insight: AIInsight) => (
                                 <InsightCard
+                                    meeting={meeting}
                                     key={insight.id}
                                     insight={insight}
                                     type={type}

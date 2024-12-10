@@ -1,5 +1,5 @@
 import React from 'react';
-import { AIInsight } from '@/types';
+import { AIInsight, Meeting } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { getInsightIcon, getInsightColor } from '@/utils/insightFormatters';
@@ -7,6 +7,7 @@ import { Button } from '../ui/button';
 import { ArrowRightIcon } from 'lucide-react';
 
 interface InsightCardProps {
+    meeting: Meeting | null;
     insight: AIInsight;
     type: string;
     formattedContent: string;
@@ -17,6 +18,7 @@ interface InsightCardProps {
 }
 
 export const InsightCard = React.memo(({ 
+    meeting,
     insight, 
     type, 
     formattedContent,
@@ -27,21 +29,33 @@ export const InsightCard = React.memo(({
 }: InsightCardProps) => {
     const onInstantPresentation = async () => {
         try {
-            const response = await fetch('https://www.mojomosaic.xyz/api/v1/create-subtopic-and-quick-ppt', {
+            console.log('meeting', meeting);
+            const response = await fetch('https://mojomosaic.xyz/api/v1/create-subtopic-and-quick-ppt', {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: {
+                    'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer be086981-630f-4a1a-8c47-712a9e128e55'
                 },
                 body: JSON.stringify({
-                    content: originalContent,
-                    meeting_id: 19,
-                    type: type,
-                    timestamp: insight.created_at
+                    config: {
+                        site_id: meeting?.site_id || 0,
+                        ssa: meeting?.ssa || 0
+                    },
+                    data: {
+                        meeting_id: meeting?.id,
+                        insight_id: parseInt(insight.id),
+                        content: originalContent
+                    }
                 })
             });
-            console.log(response);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Presentation created:', data);
         } catch (error) {
             console.error('Error sending presentation data:', error);
         }

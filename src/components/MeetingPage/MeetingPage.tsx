@@ -63,6 +63,8 @@ export const MeetingPage = () => {
                 })),
                 participants: [],
                 meetingType: response.data.meeting.meeting_type,
+                ssa: response.data.meeting.ssa,
+                site_id: response.data.meeting.site_id,
             }
             return targetMeeting;
         } catch (error) {

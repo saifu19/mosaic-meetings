@@ -376,6 +376,7 @@ export const InsightsPanel = ({
 				<div className="flex-grow overflow-y-auto p-4" ref={contentRef} onScroll={handleScroll}>
 					<div className="max-w-[2000px] mx-auto">
 						<InsightTabs
+							meeting={meeting}
 							transcriptRanges={transcriptRanges}
 							onObserve={handleObserve}
 							onUnobserve={handleUnobserve}
@@ -409,6 +410,7 @@ export const InsightsPanel = ({
 			</CardHeader>
 			<CardContent className="flex-grow overflow-y-auto" ref={contentRef} onScroll={handleScroll}>
 				<InsightTabs
+					meeting={meeting}
 					transcriptRanges={transcriptRanges}
 					onObserve={handleObserve}
 					onUnobserve={handleUnobserve}
