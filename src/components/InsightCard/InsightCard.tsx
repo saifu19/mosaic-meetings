@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AIInsight, Meeting } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,12 @@ export const InsightCard = React.memo(({
     rangeStart,
     rangeEnd 
 }: InsightCardProps) => {
+    useEffect(() => {
+        console.log('insight', insight.id);
+        if (parseInt(insight?.id) === 1004) {
+            console.log('insight', insight);
+        }
+    }, [insight]);
     const onInstantPresentation = async () => {
         try {
             console.log('meeting', meeting);
@@ -90,10 +96,17 @@ export const InsightCard = React.memo(({
                     </div>
                 )}
                 <div className="flex items-center justify-end">
-                    <Button variant="outline" onClick={onInstantPresentation}>
-                        <ArrowRightIcon className="w-4 h-4" />
-                        Instant Presentation
-                    </Button>
+                    {insight?.course_url ? (
+                        <Button variant="outline" onClick={() => window.open(insight.course_url, '_blank')}>
+                            <ArrowRightIcon className="w-4 h-4" />
+                            View Presentation
+                        </Button>
+                    ) : (
+                        <Button variant="outline" onClick={onInstantPresentation}>
+                            <ArrowRightIcon className="w-4 h-4" />
+                            Instant Presentation
+                        </Button>
+                    )}
                 </div>
             </CardContent>
         </Card>

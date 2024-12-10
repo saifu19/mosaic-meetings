@@ -130,7 +130,8 @@ export const InsightsPanel = ({
 						created_at: data.timestamp,
 						agenda: data.agenda_id,
 						start_transcript: data.start_transcript,
-						end_transcript: data.end_transcript
+						end_transcript: data.end_transcript,
+						course_url: data.course_url
 					};
 	
 					if (newInsight.agenda === currentAgendaId) {

@@ -58,6 +58,7 @@ export interface AIInsight {
 	insight_type: InsightType;
 	created_at: string;
 	agenda: string;
+	course_url: string;
 	start_transcript: string;
 	end_transcript: string;
 }

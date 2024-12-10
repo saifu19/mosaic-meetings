@@ -58,6 +58,7 @@ export const MeetingPage = () => {
                     insight: item.insight ? item.insight : null,
                     created_at: item.created_at ? new Date(item.created_at).toLocaleString() : null,
                     agenda: item.agenda ? item.agenda : null,
+                    course_url: item.course_url ? item.course_url : null,
                     start_transcript: item.start_transcript ? item.start_transcript : null,
                     end_transcript: item.end_transcript ? item.end_transcript : null,
                 })),

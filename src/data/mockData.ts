@@ -1,4 +1,4 @@
-import { Participant, Meeting, KanbanColumn, AgendaItem } from '../types';
+import { Participant, /** Meeting, **/ KanbanColumn, AgendaItem } from '../types';
 
 export const mockParticipants: Participant[] = [
     { id: "1", name: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },
@@ -8,44 +8,44 @@ export const mockParticipants: Participant[] = [
     { id: "5", name: "Alex Lee", avatar: "/placeholder.svg?height=32&width=32" },
 ];
 
-export const mockMeetings: Meeting[] = [
-    {
-        id: "1",
-        title: "Daily Scrum",
-        description: "Review progress and plan for the day",
-        startTime: null,
-        endTime: null,
-        agendaItems: [
-            { id: "1", title: "Yesterday's Progress", duration: 5, status: 'not_started' },
-            { id: "2", title: "Today's Plan", duration: 5, status: 'not_started' },
-            { id: "3", title: "Blockers", duration: 5, status: 'not_started' },
-        ],
-        transcriptItems: [],
-        insights: [],
-        participants: mockParticipants,
-        link: "",
-        isJoined: false,
-        meetingType: 'scrum'
-    },
-    {
-        id: "2",
-        title: "Sprint Planning",
-        description: "Plan the upcoming sprint",
-        startTime: null,
-        endTime: null,
-        agendaItems: [
-            { id: "1", title: "Sprint Goal", duration: 15, status: 'not_started' },
-            { id: "2", title: "Backlog Refinement", duration: 30, status: 'not_started' },
-            { id: "3", title: "Capacity Planning", duration: 15, status: 'not_started' },
-        ],
-        transcriptItems: [],
-        insights: [],
-        participants: mockParticipants,
-        link: "",
-        isJoined: false,
-        meetingType: 'sprint-planning'
-    },
-];
+// export const mockMeetings: Meeting[] = [
+//     {
+//         id: "1",
+//         title: "Daily Scrum",
+//         description: "Review progress and plan for the day",
+//         startTime: null,
+//         endTime: null,
+//         agendaItems: [
+//             { id: "1", title: "Yesterday's Progress", duration: 5, status: 'not_started' },
+//             { id: "2", title: "Today's Plan", duration: 5, status: 'not_started' },
+//             { id: "3", title: "Blockers", duration: 5, status: 'not_started' },
+//         ],
+//         transcriptItems: [],
+//         insights: [],
+//         participants: mockParticipants,
+//         link: "",
+//         isJoined: false,
+//         meetingType: 'scrum'
+//     },
+//     {
+//         id: "2",
+//         title: "Sprint Planning",
+//         description: "Plan the upcoming sprint",
+//         startTime: null,
+//         endTime: null,
+//         agendaItems: [
+//             { id: "1", title: "Sprint Goal", duration: 15, status: 'not_started' },
+//             { id: "2", title: "Backlog Refinement", duration: 30, status: 'not_started' },
+//             { id: "3", title: "Capacity Planning", duration: 15, status: 'not_started' },
+//         ],
+//         transcriptItems: [],
+//         insights: [],
+//         participants: mockParticipants,
+//         link: "",
+//         isJoined: false,
+//         meetingType: 'sprint-planning'
+//     },
+// ];
 
 export const initialKanbanColumns: KanbanColumn[] = [
     { id: "1", title: "To Do", items: [] },
